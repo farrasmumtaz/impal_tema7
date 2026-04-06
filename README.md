@@ -1,4 +1,4 @@
-# 🚀 Tugas Besar: [Nama Proyek]
+# 🚀 Tugas Besar: [StudYuk]
 
 > **Dosen Pengampu:** Muhammad Shiddiq Azis, S.T., MBA
 
@@ -19,16 +19,16 @@
 ## 🎨 Mockup Antarmuka
 Rancangan UI aplikasi yang berfokus pada pengalaman pengguna.
 
-| Login Page | Dashboard | Core Feature |
+| Login Page | Dashboard | Registrasi |
 | :---: | :---: | :---: |
-| ![Login](assets/login.png) | ![Dash](assets/dash.png) | ![Feature](assets/feature.png) |
+| ![Login](assets/login.png) | ![Dash](assets/dashboard.png) | ![Feature](assets/registrasi.png) |
 
 ---
 
 ## 🛠️ Stack Teknologi
-- **Frontend:** Next.js / Java Swing
-- **Backend:** Node.js / Java 
-- **Database:** PostgreSQL / MySQL
+- **Frontend:** HTML, CSS, JavaScript
+- **Backend:** NextJs
+- **Database:** MySQL
 
 ---
 
