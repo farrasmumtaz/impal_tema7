@@ -15,11 +15,11 @@
 *Detail proses bisnis dan integrasi database.*
 
 ### ERD
-![ERD](assets/ERDStudYuk.png)
+![ERD](assets/ERDStudYuk.drawio.png)
 *Entity Relationship Diagram dari sistem*
 
 ### CLass Diagram
-![ERD](assets/ClassDiagramStudYukStudYuk.png)
+![Class Diagram](assets/ClassDiagramStudYuk.drawio.png)
 *Class Diagram dari sistem*
 
 ---
