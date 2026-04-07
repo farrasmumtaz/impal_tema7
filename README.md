@@ -16,11 +16,11 @@
 
 ### ERD
 ![ERD](assets/ERDStudYuk.drawio.png)
-*Entity Relationship Diagram dari sistem*
+*Entity Relationship Diagram dari sistem.*
 
 ### CLass Diagram
 ![Class Diagram](assets/ClassDiagramStudYuk.drawio.png)
-*Class Diagram dari sistem*
+*Class Diagram dari sistem.*
 
 ---
 
