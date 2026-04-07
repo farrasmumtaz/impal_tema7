@@ -14,6 +14,14 @@
 ![DFD Level 1](assets/DFD1.png)
 *Detail proses bisnis dan integrasi database.*
 
+### ERD
+![ERD](assets/ERDStudYuk.png)
+*Entity Relationship Diagram dari sistem*
+
+### CLass Diagram
+![ERD](assets/ClassDiagramStudYukStudYuk.png)
+*Class Diagram dari sistem*
+
 ---
 
 ## 🎨 Mockup Antarmuka
