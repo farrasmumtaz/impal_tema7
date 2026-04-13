@@ -12,7 +12,6 @@ body {
 
 .container {
   min-height: 100px;
-  justify-content: center;
 }
 
 .logo {
@@ -38,6 +37,10 @@ body {
 .card-inner {
   max-width: 400px;
   margin: auto;
+}
+
+.card-inner h2, p {
+  text-align: center;
 }
 
 .card h2 {
@@ -128,22 +131,16 @@ body {
   color: rgba(255, 255, 255, 1);
 }
 
-.google-btn {
-  width: 100%;
-  padding: 10px;
-  border-radius: 10px;
-  border: 1px solid rgba(253, 253, 253, 1);
-  background: rgba(34, 34, 40, 1);
-  color: rgba(251, 240, 240, 1);
-  cursor: pointer;
-}
-
 .signup {
   margin-top: 15px;
   font-size: 12px;
 }
 
 .signup span {
-  color: #2EC4B6;
   cursor: pointer;
+}
+
+.signup a {
+  text-decoration: none;
+  color: #2EC4B6;
 }
