@@ -7,11 +7,13 @@ import { Link } from "react-router-dom";
 
 export default function Register() {
     const [form, setForm] = useState({
+        username: "",
         firstName: "",
         lastName: "",
         email: "",
         password: "",
         confirmPassword: "",
+        phone: "",
     });
 
     const [btnText, setBtnText] = useState("Konfirmasi");
@@ -35,8 +37,12 @@ export default function Register() {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
+                    username: form.username,
+                    nama_depan: form.firstName,
+                    nama_belakang: form.lastName,
                     email: form.email,
                     password: form.password,
+                    no_telp: form.phone,
                 }),
             });
 
@@ -62,6 +68,13 @@ export default function Register() {
                 <hr />
 
                 <form onSubmit={handleSubmit}>
+                    <InputField
+                        label="Username"
+                        type="text"
+                        value={form.username}
+                        onChange={handleChange}
+                        name="username"
+                    />
                     <div style={{ display: "flex", gap: "10px" }}>
                         <InputField
                             label="Nama Depan"
@@ -102,6 +115,14 @@ export default function Register() {
                         value={form.confirmPassword}
                         onChange={handleChange}
                         name="confirmPassword"
+                    />
+                    
+                    <InputField
+                        label="Nomor Telepon"
+                        type="text"
+                        value={form.phone}
+                        onChange={handleChange}
+                        name="phone"
                     />
 
                     <br />
