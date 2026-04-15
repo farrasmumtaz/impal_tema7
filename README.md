@@ -37,7 +37,7 @@ Rancangan UI aplikasi yang berfokus pada pengalaman pengguna.
 
 ## 🛠️ Stack Teknologi
 - **Frontend:** HTML, CSS, JavaScript
-- **Backend:** NextJs
+- **Backend:** ExpressJS
 - **Database:** MySQL
 
 ---
