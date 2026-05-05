@@ -1,0 +1,71 @@
+/* background utama */
+.page-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0a1a2f, #0f2a4a);
+  padding: 20px;
+  color: white;
+}
+
+/* title */
+.page-title {
+  font-size: 22px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+/* grid courses */
+.course-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+/* card */
+.course-card {
+  background: #16233a;
+  padding: 16px;
+  border-radius: 12px;
+  transition: 0.2s;
+}
+
+.course-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+}
+
+/* title */
+.course-title {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 6px;
+}
+
+/* desc */
+.course-desc {
+  font-size: 13px;
+  color: #9ca3af;
+  margin-bottom: 12px;
+}
+
+/* button */
+.btn-ambil {
+  width: 100%;
+  background: #06b6d4;
+  color: black;
+  padding: 8px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn-ambil:hover {
+  background: #22d3ee;
+}
+
+/* sudah diambil */
+.btn-disabled {
+  background: #374151;
+  color: #9ca3af;
+  cursor: not-allowed;
+}

@@ -1,63 +1,166 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import DashboardLayout from "../layout/DashboardLayout";
 
 export default function Dashboard() {
+  const [user, setUser] = useState(null);
+  const [courses, setCourses] = useState([]);
+  const [setMembership] = useState(null);
+  const [active, setActive] = useState(null);
 
-const getToday = () => {
-  const today = new Date();
+  const navigate = useNavigate();
 
-  return today.toLocaleDateString("id-ID", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-};
+  const getToday = () => {
+    return new Date().toLocaleDateString("id-ID", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+  };
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      window.location.href = "/";
+      return;
+    }
+
+    // 🔹 PROFILE
+    fetch("http://localhost:5000/user/profile", {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(res => {
+        if (!res.ok) throw new Error();
+        return res.json();
+      })
+      .then(setUser)
+      .catch(() => {
+        localStorage.removeItem("token");
+        window.location.href = "/";
+      });
+
+    // 🔹 COURSES
+    fetch("http://localhost:5000/courses/my-courses", {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(res => res.json())
+      .then(data => setCourses(data.data || []));
+
+    // 🔹 MEMBERSHIP
+    fetch("http://localhost:5000/user/membership", {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(res => res.json())
+      .then(setMembership);
+
+  }, []);
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    fetch("http://localhost:5000/membership/active", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then(async res => {
+        const text = await res.text();
+        try {
+          return JSON.parse(text);
+        } catch {
+          return null;
+        }
+      })
+      .then(setActive);
+  }, []);
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    window.location.href = "/";
+  };
+
+  const avgProgress =
+    courses.length === 0
+      ? 0
+      : Math.round(
+        courses.reduce((acc, c) => acc + (c.progress || 0), 0) /
+        courses.length
+      );
 
   return (
     <DashboardLayout>
-    <div className="space-y-6">
+      <div className="space-y-6">
 
-      <div className="flex justify-between items-center">
-        <div>
-          <p className="text-sm text-gray-400">{getToday()}</p>
-          <p className="text-gray-400 text-sm">
-            Lanjutkan belajarmu — kamu sudah 62% lebih dekat ke tujuan
-          </p>
-        </div>
-        <button className="bg-cyan-500 px-4 py-2 rounded-lg text-black font-semibold">
-          ▶ Lanjutkan Belajar
-        </button>
-      </div>
+        {/* HEADER */}
+        <div className="flex justify-between items-center">
+          <div>
+            <p className="text-sm text-gray-400">{getToday()}</p>
+            <p className="text-gray-400 text-sm">
+              {user
+                ? `Halo ${user.username}, lanjutkan belajarmu 🚀`
+                : "Loading..."}
+            </p>
+          </div>
 
-      <div className="grid grid-cols-4 gap-4">
-        <StatCard title="Total Pelajaran" value="12" />
-        <StatCard title="Progress" value="57%" />
-        <StatCard title="Membership" value="Pro" />
-        <StatCard title="Waktu Belajar" value="24j" />
-      </div>
-
-      <div className="grid grid-cols-3 gap-6">
-
-        <div className="col-span-2 bg-[#16233a] p-5 rounded-xl">
-          <h2 className="font-semibold mb-4">Progres Belajar</h2>
-
-          <ProgressItem name="UI/UX Design" percent={78} />
-          <ProgressItem name="ReactJS" percent={55} />
-          <ProgressItem name="Machine Learning" percent={34} />
-          <ProgressItem name="Cloud AWS" percent={62} />
-        </div>
-
-        <div className="bg-[#16233a] p-5 rounded-xl">
-          <h2 className="font-semibold mb-4">Lanjutkan Belajar</h2>
-
-          <button className="w-full bg-cyan-500 py-2 rounded-lg text-black font-semibold">
-            ▶ Lanjutkan Sekarang
+          <button
+            onClick={handleLogout}
+            className="bg-red-500 px-4 py-2 rounded-lg text-white"
+          >
+            Logout
           </button>
         </div>
 
-      </div>
+        {/* STAT */}
+        <div className="grid grid-cols-4 gap-4">
+          <StatCard title="Total Course" value={courses.length} />
+          <StatCard title="Progress" value={`${avgProgress}%`} />
+          <StatCard
+            title="Membership"
+            value={active ? active.nama_paket : "Free"}
+          />
+          <StatCard title="Waktu Belajar" value="0j" />
+        </div>
 
-    </div>
+        {/* COURSES */}
+        <div className="bg-[#16233a] p-5 rounded-xl">
+          <h2 className="font-semibold mb-4">
+            My Courses ({courses.length})
+          </h2>
+
+          {courses.length === 0 ? (
+            <p className="text-gray-400">Belum ada course</p>
+          ) : (
+            courses.map((course) => (
+              <div
+                key={course.course_id}
+                className="mb-4 p-4 bg-[#1e2a45] rounded-lg cursor-pointer hover:bg-[#243355] transition"
+                onClick={() =>
+                  navigate(`/course/${course.course_id}`)
+                }
+              >
+                <h3 className="font-semibold">{course.title}</h3>
+
+                {/* PROGRESS */}
+                <div className="mt-2">
+                  <div className="w-full bg-gray-700 h-2 rounded">
+                    <div
+                      className="bg-cyan-400 h-2 rounded"
+                      style={{
+                        width: `${course.progress || 0}%`,
+                      }}
+                    ></div>
+                  </div>
+
+                  <p className="text-xs text-gray-400 mt-1">
+                    {course.progress || 0}% selesai
+                  </p>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+      </div>
     </DashboardLayout>
   );
 }
@@ -67,23 +170,6 @@ function StatCard({ title, value }) {
     <div className="bg-[#16233a] p-4 rounded-xl">
       <p className="text-sm text-gray-400">{title}</p>
       <h3 className="text-xl font-bold mt-1">{value}</h3>
-    </div>
-  );
-}
-
-function ProgressItem({ name, percent }) {
-  return (
-    <div className="mb-4">
-      <div className="flex justify-between text-sm mb-1">
-        <span>{name}</span>
-        <span className="text-cyan-400">{percent}%</span>
-      </div>
-      <div className="w-full bg-gray-700 h-2 rounded-full">
-        <div
-          className="bg-cyan-400 h-2 rounded-full"
-          style={{ width: `${percent}%` }}
-        />
-      </div>
     </div>
   );
 }

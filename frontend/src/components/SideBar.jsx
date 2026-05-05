@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 export default function Sidebar() {
   return (
     <aside className="w-64 h-screen fixed bg-[#0f1a2e] p-5">
@@ -7,13 +9,20 @@ export default function Sidebar() {
       </h1>
 
       <nav className="space-y-4 text-gray-300">
-        <p className="hover:text-cyan-400 cursor-pointer">Dashboard</p>
-        <p className="hover:text-cyan-400 cursor-pointer">Pembelajaran</p>
-        <p className="hover:text-cyan-400 cursor-pointer">Jelajahi</p>
-        <p className="hover:text-cyan-400 cursor-pointer">Transaksi</p>
-        <p className="hover:text-cyan-400 cursor-pointer">Membership</p>
-      </nav>
 
+        <Link to="/dashboard" className="block hover:text-cyan-400">
+          Dashboard
+        </Link>
+
+        <Link to="/courses" className="block hover:text-cyan-400">
+          Jelajahi
+        </Link>
+        
+        <Link to="/membership" className="block hover:text-cyan-400">
+          Membership
+        </Link>
+
+      </nav>
     </aside>
   );
 }
