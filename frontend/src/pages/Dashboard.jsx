@@ -5,7 +5,6 @@ import DashboardLayout from "../layout/DashboardLayout";
 export default function Dashboard() {
   const [user, setUser] = useState(null);
   const [courses, setCourses] = useState([]);
-  const [setMembership] = useState(null);
   const [active, setActive] = useState(null);
 
   const navigate = useNavigate();
@@ -27,11 +26,13 @@ export default function Dashboard() {
       return;
     }
 
-    // 🔹 PROFILE
+    // PROFILE
     fetch("http://localhost:5000/user/profile", {
-      headers: { Authorization: `Bearer ${token}` },
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     })
-      .then(res => {
+      .then((res) => {
         if (!res.ok) throw new Error();
         return res.json();
       })
@@ -41,39 +42,25 @@ export default function Dashboard() {
         window.location.href = "/";
       });
 
-    // 🔹 COURSES
+    // MY COURSES
     fetch("http://localhost:5000/courses/my-courses", {
-      headers: { Authorization: `Bearer ${token}` },
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     })
-      .then(res => res.json())
-      .then(data => setCourses(data.data || []));
+      .then((res) => res.json())
+      .then((data) => setCourses(data.data || []));
 
-    // 🔹 MEMBERSHIP
-    fetch("http://localhost:5000/user/membership", {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then(res => res.json())
-      .then(setMembership);
-
-  }, []);
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-
+    // MEMBERSHIP
     fetch("http://localhost:5000/membership/active", {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     })
-      .then(async res => {
-        const text = await res.text();
-        try {
-          return JSON.parse(text);
-        } catch {
-          return null;
-        }
-      })
+      .then((res) => res.json())
       .then(setActive);
   }, []);
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     window.location.href = "/";
@@ -83,93 +70,236 @@ export default function Dashboard() {
     courses.length === 0
       ? 0
       : Math.round(
-        courses.reduce((acc, c) => acc + (c.progress || 0), 0) /
-        courses.length
-      );
+          courses.reduce(
+            (acc, c) => acc + (c.progress || 0),
+            0
+          ) / courses.length
+        );
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
+      {/* HEADER */}
+      <div className="flex items-center justify-between mb-6">
 
-        {/* HEADER */}
-        <div className="flex justify-between items-center">
-          <div>
-            <p className="text-sm text-gray-400">{getToday()}</p>
-            <p className="text-gray-400 text-sm">
-              {user
-                ? `Halo ${user.username}, lanjutkan belajarmu 🚀`
-                : "Loading..."}
-            </p>
-          </div>
+        <div>
+          <p className="text-sm text-[#64748B]">
+            {getToday()}
+          </p>
 
-          <button
-            onClick={handleLogout}
-            className="bg-red-500 px-4 py-2 rounded-lg text-white"
-          >
-            Logout
-          </button>
+          <h1 className="text-2xl font-bold text-white mt-1">
+            Halo,{" "}
+            <span className="text-cyan-400">
+              {user?.username || "User"}
+            </span>
+          </h1>
         </div>
 
-        {/* STAT */}
-        <div className="grid grid-cols-4 gap-4">
-          <StatCard title="Total Course" value={courses.length} />
-          <StatCard title="Progress" value={`${avgProgress}%`} />
-          <StatCard
-            title="Membership"
-            value={active ? active.nama_paket : "Free"}
-          />
-          <StatCard title="Waktu Belajar" value="0j" />
-        </div>
+        <button
+          onClick={handleLogout}
+          className="
+            border border-white/10
+            px-5 py-2.5
+            rounded-xl
+            text-white
+            hover:border-red-400
+            hover:bg-red-500
+            transition
+          "
+        >
+          Logout
+        </button>
 
-        {/* COURSES */}
-        <div className="bg-[#16233a] p-5 rounded-xl">
-          <h2 className="font-semibold mb-4">
-            My Courses ({courses.length})
+      </div>
+
+      {/* STATS */}
+      <div className="grid grid-cols-4 gap-4 mb-6">
+
+        <StatCard
+          title="TOTAL COURSE"
+          value={courses.length}
+        />
+
+        <StatCard
+          title="PROGRESS"
+          value={`${avgProgress}%`}
+          active
+        />
+
+        <StatCard
+          title="MEMBERSHIP"
+          value={active?.nama_paket || "Free"}
+        />
+
+        <StatCard
+          title="WAKTU BELAJAR"
+          value="0j"
+        />
+
+      </div>
+
+      {/* COURSES */}
+      <div>
+
+        <div className="flex items-center gap-3 mb-4">
+
+          <h2 className="text-xl font-bold text-white">
+            My Courses
           </h2>
 
+          <div
+            className="
+              bg-white/5
+              border border-white/10
+              rounded-full
+              px-3 py-1
+              text-sm text-[#94A3B8]
+            "
+          >
+            {courses.length}
+          </div>
+
+        </div>
+
+        <div className="space-y-4">
+
           {courses.length === 0 ? (
-            <p className="text-gray-400">Belum ada course</p>
+
+            <div
+              className="
+                bg-[#101C38]
+                border border-white/5
+                rounded-2xl
+                p-5
+                text-[#64748B]
+              "
+            >
+              Belum ada course yang diambil
+            </div>
+
           ) : (
-            courses.map((course) => (
+
+            courses.map((course, index) => (
+
               <div
                 key={course.course_id}
-                className="mb-4 p-4 bg-[#1e2a45] rounded-lg cursor-pointer hover:bg-[#243355] transition"
                 onClick={() =>
                   navigate(`/course/${course.course_id}`)
                 }
+                className="
+                  bg-[#101C38]
+                  border border-white/5
+                  rounded-2xl
+                  p-4
+                  cursor-pointer
+                  hover:border-cyan-400/20
+                  hover:bg-[#132347]
+                  transition
+                "
               >
-                <h3 className="font-semibold">{course.title}</h3>
 
-                {/* PROGRESS */}
-                <div className="mt-2">
-                  <div className="w-full bg-gray-700 h-2 rounded">
-                    <div
-                      className="bg-cyan-400 h-2 rounded"
-                      style={{
-                        width: `${course.progress || 0}%`,
-                      }}
-                    ></div>
+                <div className="flex items-center gap-4">
+
+                  {/* ICON */}
+                  <div
+                    className={`
+                      w-12 h-12 rounded-xl
+                      flex items-center justify-center
+                      ${
+                        index % 4 === 0
+                          ? "bg-cyan-400/10 text-cyan-300"
+                          : index % 4 === 1
+                          ? "bg-green-400/10 text-green-300"
+                          : index % 4 === 2
+                          ? "bg-purple-400/10 text-purple-300"
+                          : "bg-yellow-400/10 text-yellow-300"
+                      }
+                    `}
+                  >
+                    <div className="w-3 h-3 border border-current" />
                   </div>
 
-                  <p className="text-xs text-gray-400 mt-1">
-                    {course.progress || 0}% selesai
-                  </p>
+                  {/* CONTENT */}
+                  <div className="flex-1">
+
+                    <div className="flex items-center justify-between">
+
+                      <div>
+
+                        <h3 className="text-lg font-bold text-white">
+                          {course.title}
+                        </h3>
+
+                        <p className="text-sm text-[#64748B] mt-1">
+                          {course.progress || 0}% selesai
+                        </p>
+
+                      </div>
+
+                      <div className="text-[#64748B]">
+                        →
+                      </div>
+
+                    </div>
+
+                    {/* PROGRESS */}
+                    <div className="mt-3 h-1.5 bg-white/5 rounded-full overflow-hidden">
+
+                      <div
+                        className="
+                          h-full
+                          bg-gradient-to-r
+                          from-cyan-400
+                          to-cyan-300
+                        "
+                        style={{
+                          width: `${course.progress || 0}%`,
+                        }}
+                      />
+
+                    </div>
+
+                  </div>
+
                 </div>
+
               </div>
+
             ))
+
           )}
+
         </div>
 
       </div>
+
     </DashboardLayout>
   );
 }
 
-function StatCard({ title, value }) {
+function StatCard({ title, value, active }) {
   return (
-    <div className="bg-[#16233a] p-4 rounded-xl">
-      <p className="text-sm text-gray-400">{title}</p>
-      <h3 className="text-xl font-bold mt-1">{value}</h3>
+    <div
+      className="
+        bg-[#101C38]
+        border border-white/5
+        rounded-2xl
+        p-4
+      "
+    >
+
+      <p className="text-sm font-semibold text-[#64748B]">
+        {title}
+      </p>
+
+      <h2
+        className={`
+          mt-3 text-3xl font-bold
+          ${active ? "text-cyan-400" : "text-white"}
+        `}
+      >
+        {value}
+      </h2>
+
     </div>
   );
 }

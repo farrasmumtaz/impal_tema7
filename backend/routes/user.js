@@ -6,7 +6,18 @@ const auth = require("../middleware/auth");
 
 router.get("/profile", auth, async (req, res) => {
   const [rows] = await db.execute(
-    "SELECT user_id, username, email FROM users WHERE user_id = ?",
+    `
+    SELECT
+      user_id,
+      username,
+      nama_depan,
+      nama_belakang,
+      email,
+      no_telp,
+      bio
+    FROM users
+    WHERE user_id = ?
+    `,
     [req.user.id]
   );
 
@@ -61,6 +72,54 @@ router.get("/membership", auth, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });
+  }
+});
+
+router.put("/update-profile", auth, async (req, res) => {
+  try {
+
+    const {
+      username,
+      nama_depan,
+      nama_belakang,
+      email,
+      no_telp,
+      bio,
+    } = req.body;
+
+    await db.query(
+      `
+      UPDATE users
+      SET
+        username = ?,
+        nama_depan = ?,
+        nama_belakang = ?,
+        email = ?,
+        no_telp = ?,
+        bio = ?
+      WHERE user_id = ?
+      `,
+      [
+        username,
+        nama_depan,
+        nama_belakang,
+        email,
+        no_telp,
+        bio,
+        req.user.id,
+      ]
+    );
+
+    res.json({
+      message: "Profile berhasil diupdate",
+    });
+
+  } catch (err) {
+    console.error(err);
+
+    res.status(500).json({
+      message: "Server error",
+    });
   }
 });
 

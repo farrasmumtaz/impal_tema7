@@ -12,48 +12,78 @@ export default function Transaksi() {
   const [paket, setPaket] = useState(null);
 
   const methods = [
-    { id: "gopay", name: "GOPAY", color: "bg-cyan-400" },
-    { id: "dana", name: "DANA", color: "bg-yellow-400" },
-    { id: "ovo", name: "OVO", color: "bg-blue-400" },
-    { id: "bca", name: "BCA", color: "bg-green-400" },
-    { id: "mandiri", name: "Mandiri", color: "bg-red-400" },
+    {
+      id: "gopay",
+      name: "GOPAY",
+      color: "bg-cyan-400",
+    },
+    {
+      id: "dana",
+      name: "DANA",
+      color: "bg-blue-400",
+    },
+    {
+      id: "ovo",
+      name: "OVO",
+      color: "bg-violet-400",
+    },
+    {
+      id: "bca",
+      name: "BCA",
+      color: "bg-sky-400",
+    },
+    {
+      id: "mandiri",
+      name: "Mandiri",
+      color: "bg-yellow-400",
+    },
   ];
 
   useEffect(() => {
     const token = localStorage.getItem("token");
 
-    // 🔥 ambil paket dari membership
+    // AMBIL PAKET
     fetch("http://localhost:5000/membership/packages")
-      .then(res => res.json())
-      .then(data => {
-        const found = data.find(p => p.paket_id == paketId);
+      .then((res) => res.json())
+      .then((data) => {
+        const found = data.find(
+          (p) => p.paket_id == paketId
+        );
+
         setPaket(found);
       });
 
-    // 🔥 ambil transaksi (riwayat)
-    fetch("http://localhost:5000/membership/my-transactions", {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then(res => res.json())
+    // AMBIL RIWAYAT
+    fetch(
+      "http://localhost:5000/membership/my-transactions",
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    )
+      .then((res) => res.json())
       .then(setTransactions);
 
   }, [paketId]);
 
   const handlePay = async () => {
-    console.log("🔥 HANDLE PAY KEJALAN");
     try {
       const token = localStorage.getItem("token");
 
-      // 1. create transaksi
+      // CREATE TRANSACTION
       const res = await fetch(
         "http://localhost:5000/membership/create-transaction",
         {
           method: "POST",
           headers: {
-            "Content-Type": "application/json",
+            "Content-Type":
+              "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ paketId }),
+          body: JSON.stringify({
+            paketId,
+          }),
         }
       );
 
@@ -63,22 +93,16 @@ export default function Transaksi() {
         throw new Error(data.message);
       }
 
-      console.log("CREATE:", data);
-
       const subId = data.subskripsiId;
 
-      if (!subId) {
-        throw new Error("Subskripsi ID tidak ada");
-      }
-
-      // 2. langsung bayar pakai ID ini
-      console.log("SUB ID:", subId);
+      // PAY
       const res2 = await fetch(
         "http://localhost:5000/membership/pay",
         {
           method: "POST",
           headers: {
-            "Content-Type": "application/json",
+            "Content-Type":
+              "application/json",
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
@@ -90,144 +114,487 @@ export default function Transaksi() {
       const payResult = await res2.json();
 
       if (!res2.ok) {
-        throw new Error(payResult.message);
+        throw new Error(
+          payResult.message
+        );
       }
 
-      console.log("PAY:", payResult);
-
       alert("Pembayaran berhasil");
-      window.location.href = "/dashboard";
+
+      window.location.href =
+        "/dashboard";
 
     } catch (err) {
-      console.error("ERROR:", err);
-      alert(err.message || "Terjadi error saat pembayaran");
+      console.error(err);
+
+      alert(
+        err.message ||
+          "Terjadi error saat pembayaran"
+      );
     }
   };
 
-  if (!paket) return <p>Loading...</p>;
+  const formatPrice = (price) => {
+    return new Intl.NumberFormat(
+      "id-ID"
+    ).format(price);
+  };
+
+  if (!paket) {
+    return (
+      <DashboardLayout>
+        <p className="text-white">
+          Loading...
+        </p>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>
-      <div className="p-6 grid grid-cols-3 gap-6">
 
-        {/* LEFT - METODE */}
+      {/* HEADER */}
+      <div className="mb-7">
+
+        <p className="text-[#64748B] text-sm">
+          Pembayaran Membership
+        </p>
+
+        <h1 className="text-2xl font-bold text-white mt-1">
+          Selesaikan transaksi
+          <span className="text-[#64748B] font-medium">
+            {" "}
+            — aman & cepat
+          </span>
+        </h1>
+
+      </div>
+
+      {/* CONTENT */}
+      <div className="grid grid-cols-3 gap-5">
+
+        {/* LEFT */}
         <div className="col-span-2">
-          <h2 className="text-xl font-semibold mb-4">
-            Metode Pembayaran
-          </h2>
 
-          <p className="text-gray-400 mb-2">Dompet digital</p>
+          {/* PAYMENT METHOD */}
+          <div
+            className="
+              bg-[#101C38]
+              border border-white/5
+              rounded-2xl
+              p-5
+            "
+          >
 
-          {methods.map(m => (
-            <div
-              key={m.id}
-              onClick={() => setSelectedMethod(m.id)}
-              className={`flex items-center justify-between p-3 rounded-lg mb-2 cursor-pointer 
-                ${selectedMethod === m.id ? "bg-[#243355]" : "bg-[#1e2a45]"}`}
-            >
-              <div className="flex items-center gap-3">
-                <div className={`w-4 h-4 rounded ${m.color}`} />
-                <span>{m.name}</span>
-              </div>
+            <h2 className="text-lg font-semibold text-white mb-5">
+              Metode Pembayaran
+            </h2>
+
+            <div className="space-y-3">
+
+              {methods.map((m) => (
+
+                <div
+                  key={m.id}
+                  onClick={() =>
+                    setSelectedMethod(
+                      m.id
+                    )
+                  }
+                  className={`
+                    flex
+                    items-center
+                    justify-between
+                    rounded-xl
+                    border
+                    px-4 py-3
+                    cursor-pointer
+                    transition
+
+                    ${
+                      selectedMethod ===
+                      m.id
+                        ? `
+                          border-cyan-400/40
+                          bg-cyan-400/10
+                        `
+                        : `
+                          border-white/5
+                          hover:border-cyan-400/20
+                        `
+                    }
+                  `}
+                >
+
+                  <div className="flex items-center gap-3">
+
+                    <div
+                      className={`
+                        w-3 h-3 rounded-full
+                        ${m.color}
+                      `}
+                    />
+
+                    <span className="text-white font-medium">
+                      {m.name}
+                    </span>
+
+                  </div>
+
+                  <div
+                    className={`
+                      w-4 h-4
+                      rounded-full
+                      border
+
+                      ${
+                        selectedMethod ===
+                        m.id
+                          ? `
+                            bg-cyan-400
+                            border-cyan-400
+                          `
+                          : `
+                            border-white/20
+                          `
+                      }
+                    `}
+                  />
+
+                </div>
+
+              ))}
+
+            </div>
+
+          </div>
+
+          {/* HISTORY */}
+          <div
+            className="
+              mt-5
+              bg-[#101C38]
+              border border-white/5
+              rounded-2xl
+              p-5
+            "
+          >
+
+            <div className="flex items-center justify-between mb-5">
+
+              <h2 className="text-lg font-semibold text-white">
+                Riwayat Transaksi
+              </h2>
 
               <div
-                className={`w-4 h-4 rounded-full border ${selectedMethod === m.id ? "bg-cyan-400" : ""
-                  }`}
-              />
+                className="
+                  px-3 py-1
+                  rounded-full
+                  bg-[#16213D]
+                  text-[#94A3B8]
+                  text-xs
+                "
+              >
+                {transactions.length} transaksi
+              </div>
+
             </div>
-          ))}
 
-          {/* RIWAYAT */}
-          <h3 className="mt-6 mb-2">Riwayat Transaksi</h3>
+            {transactions.length === 0 ? (
 
-          <div className="bg-[#1e2a45] p-4 rounded-lg">
-            <table className="w-full text-sm">
-              <thead className="text-gray-400">
-                <tr>
-                  <th>ID</th>
-                  <th>Tanggal</th>
-                  <th>Metode</th>
-                  <th>Jumlah</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
+              <p className="text-[#64748B] text-sm">
+                Belum ada transaksi
+              </p>
 
-              <tbody>
-                {transactions.map(t => (
-                  <tr key={t.transaksi_id} className="text-center">
-                    <td>{t.transaksi_id}</td>
-                    <td>{t.tanggal_transaksi?.slice(0, 10)}</td>
-                    <td>{t.metode_pembayaran}</td>
-                    <td>Rp {t.jumlah_bayar}</td>
-                    <td>
-                      <span
-                        className={
-                          t.status_pembayaran === "paid"
-                            ? "text-green-400"
-                            : "text-yellow-400"
-                        }
-                      >
-                        {t.status_pembayaran}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            ) : (
+
+              <div className="overflow-x-auto">
+
+                <table className="w-full text-sm">
+
+                  <thead>
+
+                    <tr className="text-left text-[#64748B] border-b border-white/5">
+
+                      <th className="pb-3">
+                        ID
+                      </th>
+
+                      <th className="pb-3">
+                        Tanggal
+                      </th>
+
+                      <th className="pb-3">
+                        Metode
+                      </th>
+
+                      <th className="pb-3">
+                        Total
+                      </th>
+
+                      <th className="pb-3">
+                        Status
+                      </th>
+
+                    </tr>
+
+                  </thead>
+
+                  <tbody>
+
+                    {transactions.map(
+                      (t) => (
+
+                        <tr
+                          key={
+                            t.transaksi_id
+                          }
+                          className="
+                            border-b
+                            border-white/5
+                            text-white
+                          "
+                        >
+
+                          <td className="py-4">
+                            #
+                            {
+                              t.transaksi_id
+                            }
+                          </td>
+
+                          <td className="py-4 text-[#94A3B8]">
+                            {t.tanggal_transaksi?.slice(
+                              0,
+                              10
+                            )}
+                          </td>
+
+                          <td className="py-4">
+                            {
+                              t.metode_pembayaran
+                            }
+                          </td>
+
+                          <td className="py-4">
+                            Rp{" "}
+                            {formatPrice(
+                              t.jumlah_bayar
+                            )}
+                          </td>
+
+                          <td className="py-4">
+
+                            <span
+                              className={`
+                                px-3 py-1
+                                rounded-full
+                                text-xs
+                                font-semibold
+
+                                ${
+                                  t.status_pembayaran ===
+                                  "paid"
+                                    ? `
+                                      bg-green-400/10
+                                      text-green-400
+                                    `
+                                    : `
+                                      bg-yellow-400/10
+                                      text-yellow-400
+                                    `
+                                }
+                              `}
+                            >
+                              {
+                                t.status_pembayaran
+                              }
+                            </span>
+
+                          </td>
+
+                        </tr>
+
+                      )
+                    )}
+
+                  </tbody>
+
+                </table>
+
+              </div>
+
+            )}
+
           </div>
+
         </div>
 
-        {/* RIGHT - SUMMARY (DINAMIS) */}
-        <div className="bg-[#1e2a45] p-5 rounded-xl h-fit">
-          <h3 className="font-semibold mb-3">
-            Jumlah Pembayaran
-          </h3>
+        {/* RIGHT */}
+        <div
+          className="
+            bg-[#101C38]
+            border border-cyan-400/10
+            rounded-2xl
+            p-5
+            h-fit
+            sticky top-6
+          "
+        >
 
-          <p>{paket.nama_paket}</p>
-          <p className="text-lg font-bold">Rp {paket.harga}</p>
-
-          <p className="mt-2 text-sm text-gray-400">
-            {paket.durasi_hari} hari
+          <p className="text-[#64748B] text-sm">
+            Ringkasan Pembayaran
           </p>
 
+          <h2 className="text-2xl font-bold text-white mt-2">
+            {paket.nama_paket}
+          </h2>
+
+          <div className="mt-5">
+
+            <p className="text-[#64748B] text-sm">
+              Total Pembayaran
+            </p>
+
+            <h1 className="text-4xl font-bold text-cyan-400 mt-1">
+              Rp{" "}
+              {formatPrice(
+                paket.harga
+              )}
+            </h1>
+
+          </div>
+
+          <div className="mt-6 space-y-4">
+
+            <div className="flex justify-between text-sm">
+
+              <span className="text-[#64748B]">
+                Durasi
+              </span>
+
+              <span className="text-white font-medium">
+                {paket.durasi_hari} hari
+              </span>
+
+            </div>
+
+            <div className="flex justify-between text-sm">
+
+              <span className="text-[#64748B]">
+                Metode
+              </span>
+
+              <span className="text-white font-medium uppercase">
+                {selectedMethod}
+              </span>
+
+            </div>
+
+          </div>
+
           <button
-            onClick={() => setShowConfirm(true)}
-            className="mt-4 w-full bg-gray-300 text-black py-2 rounded-lg"
+            onClick={() =>
+              setShowConfirm(true)
+            }
+            className="
+              mt-7
+              w-full
+              py-3
+              rounded-xl
+              bg-cyan-400
+              text-black
+              font-semibold
+              hover:opacity-90
+              transition
+            "
           >
             Bayar Sekarang
           </button>
+
         </div>
 
-        {/* MODAL */}
-        {showConfirm && (
-          <div className="fixed inset-0 bg-black/60 flex items-center justify-center">
-            <div className="bg-[#16233a] p-6 rounded-xl text-center w-[300px]">
+      </div>
 
-              <p className="mb-4">
-                Apakah anda ingin melanjutkan pembayaran?
-              </p>
+      {/* MODAL */}
+      {showConfirm && (
 
-              <div className="flex justify-center gap-3">
-                <button
-                  onClick={handlePay}
-                  className="bg-cyan-500 px-4 py-1 rounded text-black"
-                >
-                  Ya
-                </button>
+        <div
+          className="
+            fixed inset-0
+            bg-black/60
+            backdrop-blur-sm
+            flex items-center justify-center
+            z-50
+          "
+        >
 
-                <button
-                  onClick={() => setShowConfirm(false)}
-                  className="bg-gray-500 px-4 py-1 rounded text-white"
-                >
-                  Tidak
-                </button>
-              </div>
+          <div
+            className="
+              w-[360px]
+              bg-[#101C38]
+              border border-white/5
+              rounded-2xl
+              p-6
+            "
+          >
+
+            <h2 className="text-xl font-bold text-white">
+              Konfirmasi Pembayaran
+            </h2>
+
+            <p className="text-[#94A3B8] text-sm mt-3 leading-relaxed">
+              Apakah kamu yakin ingin
+              melanjutkan pembayaran
+              membership ini?
+            </p>
+
+            <div className="flex gap-3 mt-6">
+
+              <button
+                onClick={() =>
+                  setShowConfirm(
+                    false
+                  )
+                }
+                className="
+                  flex-1
+                  py-3
+                  rounded-xl
+                  border border-white/10
+                  text-white
+                  font-medium
+                  hover:bg-white/5
+                  transition
+                "
+              >
+                Batal
+              </button>
+
+              <button
+                onClick={handlePay}
+                className="
+                  flex-1
+                  py-3
+                  rounded-xl
+                  bg-cyan-400
+                  text-black
+                  font-semibold
+                  hover:opacity-90
+                  transition
+                "
+              >
+                Lanjutkan
+              </button>
 
             </div>
-          </div>
-        )}
 
-      </div>
+          </div>
+
+        </div>
+
+      )}
+
     </DashboardLayout>
   );
 }

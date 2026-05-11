@@ -1,12 +1,22 @@
-import Sidebar from "../components/SideBar";
+import Sidebar from "../components/Sidebar";
 
 export default function DashboardLayout({ children }) {
   return (
-    <div className="flex h-screen bg-[#0b1220] text-white">
+    <div className="min-h-screen bg-[#020817] text-white">
 
+      {/* SIDEBAR */}
       <Sidebar />
 
-      <main className="ml-64 flex-1 overflow-y-auto p-6">
+      {/* CONTENT */}
+      <main
+        className="
+          ml-[260px]
+          min-h-screen
+          p-6
+          relative
+          z-0
+        "
+      >
         {children}
       </main>
 

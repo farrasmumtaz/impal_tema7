@@ -15,11 +15,7 @@ const db = mysql.createPool({
   enableKeepAlive: true,
   keepAliveInitialDelay: 0,
 
-  connectTimeout: 10000,
-
-  ssl: {
-    rejectUnauthorized: false 
-  }
+  connectTimeout: 10000
 });
 
 module.exports = db;

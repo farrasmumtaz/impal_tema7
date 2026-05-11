@@ -6,50 +6,57 @@ export default function Courses() {
   const [myCourses, setMyCourses] = useState([]);
   const [limitData, setLimitData] = useState(null);
 
-  // 🔥 Ambil limit dari backend
+  // MEMBERSHIP LIMIT
   useEffect(() => {
     const token = localStorage.getItem("token");
 
     fetch("http://localhost:5000/membership/limit", {
-      headers: { Authorization: `Bearer ${token}` },
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     })
-      .then(res => res.json())
+      .then((res) => res.json())
       .then(setLimitData)
       .catch(console.error);
   }, []);
 
-  // 🔥 Ambil semua course + course user
+  // COURSES
   useEffect(() => {
     const token = localStorage.getItem("token");
 
     fetch("http://localhost:5000/courses")
-      .then(res => res.json())
+      .then((res) => res.json())
       .then(setCourses);
 
     fetch("http://localhost:5000/courses/my-courses", {
-      headers: { Authorization: `Bearer ${token}` },
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     })
-      .then(res => res.json())
-      .then(data => setMyCourses(data.data || []));
+      .then((res) => res.json())
+      .then((data) => setMyCourses(data.data || []));
   }, []);
 
-  // 🔹 cek apakah course sudah diambil
+  // CHECK TAKEN
   const isTaken = (id) =>
-    myCourses.some(c => c.course_id === id);
+    myCourses.some((c) => c.course_id === id);
 
-  // 🔥 cek limit membership
+  // LIMIT
   const isLimitReached = () => {
     if (!limitData) return false;
-    if (limitData.limit === null) return false; // unlimited
 
-    return limitData.total >= limitData.limit;
+    if (limitData.limit === null)
+      return false;
+
+    return (
+      limitData.total >= limitData.limit
+    );
   };
 
-  // 🔥 ambil course
+  // ADD COURSE
   const handleAmbil = async (courseId) => {
     const token = localStorage.getItem("token");
 
-    // guard frontend
     if (isLimitReached()) {
       alert("Limit paket kamu sudah habis");
       return;
@@ -61,111 +68,256 @@ export default function Courses() {
         {
           method: "POST",
           headers: {
-            "Content-Type": "application/json",
+            "Content-Type":
+              "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ courseId }),
+          body: JSON.stringify({
+            courseId,
+          }),
         }
       );
 
       const data = await res.json();
 
       if (res.ok) {
-        // update UI langsung (optimistic update)
-        setMyCourses(prev => [...prev, { course_id: courseId }]);
+        setMyCourses((prev) => [
+          ...prev,
+          { course_id: courseId },
+        ]);
 
-        // update limit
-        if (limitData && limitData.limit !== null) {
+        if (
+          limitData &&
+          limitData.limit !== null
+        ) {
           setLimitData({
             ...limitData,
-            total: limitData.total + 1
+            total: limitData.total + 1,
           });
         }
-
       } else {
         alert(data.message);
       }
-
     } catch (err) {
       console.error(err);
       alert("Terjadi error");
     }
   };
 
+  const colors = [
+    "bg-cyan-400/10 text-cyan-300",
+    "bg-green-400/10 text-green-300",
+    "bg-purple-400/10 text-purple-300",
+    "bg-yellow-400/10 text-yellow-300",
+  ];
+
   return (
     <DashboardLayout>
-      <div className="p-6">
 
-        <h2 className="text-xl font-semibold mb-4">
-          📚 Daftar Course
-        </h2>
+      {/* HEADER */}
+      <div className="mb-8">
 
-        {/* 🔥 INFO LIMIT */}
-        {limitData && (
-          <p className="text-sm text-gray-400 mb-4">
-            {limitData.limit === null
-              ? "Unlimited access 🚀"
-              : `Dipakai: ${limitData.total} / ${limitData.limit}`}
-          </p>
-        )}
+        <p className="text-[#64748B] text-sm">
+          Daftar Course
+        </p>
 
-        {/* 🔥 GRID COURSE */}
-        <div className="grid grid-cols-4 gap-4">
+        <h1 className="text-2xl font-bold text-white mt-1">
 
-          {courses.map((c) => (
+          {limitData?.limit === null
+            ? "Unlimited access"
+            : "Mulai belajar"}
+
+          <span className="text-[#64748B] font-medium">
+            {" "}
+            —
+            {limitData?.limit === null
+              ? " Premium plan aktif"
+              : ` ${limitData?.total}/${limitData?.limit} course digunakan`}
+          </span>
+
+        </h1>
+
+      </div>
+
+      {/* GRID */}
+      <div className="grid grid-cols-2 gap-4">
+
+        {courses.map((c, index) => {
+          const taken = isTaken(
+            c.course_id
+          );
+
+          const limitReached =
+            isLimitReached();
+
+          return (
             <div
               key={c.course_id}
-              className="bg-[#1e2a45] p-4 rounded-lg hover:scale-105 transition"
+              className="
+                bg-[#101C38]
+                border border-white/5
+                rounded-2xl
+                p-5
+                hover:border-cyan-400/20
+                transition
+              "
             >
-              <h3 className="font-semibold">{c.title}</h3>
 
-              {/* STATUS */}
-              <p className="text-xs mt-2 text-gray-400">
-                {isTaken(c.course_id)
-                  ? "Sudah Diambil"
-                  : isLimitReached()
-                    ? "Limit Habis"
-                    : "Tersedia"}
-              </p>
+              {/* TOP */}
+              <div className="flex gap-4">
+
+                {/* ICON */}
+                <div
+                  className={`
+                    w-12 h-12 rounded-xl
+                    flex items-center justify-center
+                    shrink-0
+                    ${colors[index % 4]}
+                  `}
+                >
+                  <div className="w-3 h-3 border border-current" />
+                </div>
+
+                {/* CONTENT */}
+                <div className="flex-1">
+
+                  <div className="flex items-center gap-3 flex-wrap">
+
+                    <h2 className="text-xl font-bold text-white leading-none">
+                      {c.title}
+                    </h2>
+
+                    {taken && (
+                      <div
+                        className="
+                          px-3 py-1
+                          rounded-full
+                          bg-cyan-400/10
+                          border border-cyan-400/20
+                          text-cyan-400
+                          text-xs
+                          font-semibold
+                        "
+                      >
+                        Diambil
+                      </div>
+                    )}
+
+                  </div>
+
+                  <p className="text-sm text-[#7C8DB5] mt-3 leading-relaxed">
+
+                    {c.description ||
+                      "Pelajari materi lengkap dan tingkatkan skillmu bersama course interaktif premium."}
+
+                  </p>
+
+                </div>
+
+              </div>
 
               {/* BUTTON */}
               <button
-                onClick={() => handleAmbil(c.course_id)}
-                disabled={isTaken(c.course_id) || isLimitReached()}
-                className={`mt-3 w-full py-2 rounded ${
-                  isTaken(c.course_id) || isLimitReached()
-                    ? "bg-gray-500 cursor-not-allowed"
-                    : "bg-cyan-500 text-black"
-                }`}
+                onClick={() =>
+                  handleAmbil(c.course_id)
+                }
+                disabled={
+                  taken || limitReached
+                }
+                className={`
+                  mt-5
+                  w-full
+                  py-2.5
+                  rounded-xl
+                  border
+                  text-base
+                  font-semibold
+                  transition
+
+                  ${
+                    taken
+                      ? `
+                        border-white/10
+                        bg-white/5
+                        text-white
+                        cursor-not-allowed
+                      `
+                      : limitReached
+                      ? `
+                        border-red-400/20
+                        bg-red-400/10
+                        text-red-300
+                        cursor-not-allowed
+                      `
+                      : `
+                        border-white/10
+                        hover:border-cyan-400/40
+                        hover:bg-cyan-400
+                        hover:text-black
+                        text-white
+                      `
+                  }
+                `}
               >
-                {isTaken(c.course_id)
+
+                {taken
                   ? "Sudah Diambil"
-                  : isLimitReached()
-                    ? "Limit Tercapai"
-                    : "Ambil Course"}
+                  : limitReached
+                  ? "Limit Tercapai"
+                  : "Ambil Course"}
+
               </button>
 
             </div>
-          ))}
+          );
+        })}
+
+      </div>
+
+      {/* LIMIT WARNING */}
+      {isLimitReached() && (
+
+        <div
+          className="
+            mt-6
+            bg-[#101C38]
+            border border-red-400/10
+            rounded-2xl
+            p-5
+          "
+        >
+
+          <h2 className="text-lg font-bold text-white">
+            Limit paket tercapai
+          </h2>
+
+          <p className="text-sm text-[#7C8DB5] mt-2">
+            Upgrade membership untuk
+            mengambil lebih banyak course.
+          </p>
+
+          <a
+            href="/membership"
+            className="
+              inline-flex
+              mt-4
+              px-5 py-2.5
+              rounded-xl
+              bg-cyan-400
+              text-black
+              text-sm
+              font-semibold
+              hover:opacity-90
+              transition
+            "
+          >
+            Upgrade Membership
+          </a>
 
         </div>
 
-        {/* 🔥 UPGRADE PROMPT */}
-        {isLimitReached() && (
-          <div className="mt-6 bg-[#16233a] p-4 rounded text-center">
-            <p className="mb-2">
-              Kamu sudah mencapai batas paket 🚫
-            </p>
-            <a
-              href="/membership"
-              className="bg-cyan-500 px-4 py-2 rounded text-black"
-            >
-              Upgrade Membership
-            </a>
-          </div>
-        )}
+      )}
 
-      </div>
     </DashboardLayout>
   );
 }

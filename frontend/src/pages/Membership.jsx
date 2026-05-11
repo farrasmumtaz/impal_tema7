@@ -5,16 +5,17 @@ import { useNavigate } from "react-router-dom";
 export default function Membership() {
   const [packages, setPackages] = useState([]);
   const [active, setActive] = useState(null);
+
   const navigate = useNavigate();
 
-  // GET PACKAGES
+  // PACKAGES
   useEffect(() => {
     fetch("http://localhost:5000/membership/packages")
-      .then(res => res.json())
+      .then((res) => res.json())
       .then(setPackages);
   }, []);
 
-  // GET ACTIVE MEMBERSHIP
+  // ACTIVE MEMBERSHIP
   useEffect(() => {
     const token = localStorage.getItem("token");
 
@@ -23,8 +24,9 @@ export default function Membership() {
         Authorization: `Bearer ${token}`,
       },
     })
-      .then(async res => {
+      .then(async (res) => {
         const text = await res.text();
+
         try {
           return JSON.parse(text);
         } catch {
@@ -32,92 +34,283 @@ export default function Membership() {
         }
       })
       .then(setActive);
-
   }, []);
 
   const isActive = (id) => {
     return active && active.paket_id === id;
   };
 
+  const formatPrice = (price) => {
+    return new Intl.NumberFormat("id-ID").format(price);
+  };
+
+  const formatDate = (date) => {
+    return new Date(date).toLocaleDateString(
+      "id-ID",
+      {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      }
+    );
+  };
+
   return (
     <DashboardLayout>
-      <div className="p-6">
 
-        <h2 className="text-xl font-semibold mb-4">
+      {/* HEADER */}
+      <div className="mb-8">
+
+        <p className="text-[#64748B] text-sm">
           Upgrade Membership
-        </h2>
+        </p>
 
-        {/* LIST PAKET */}
-        <div className="grid grid-cols-3 gap-4">
-          {packages.map(p => (
-            <div key={p.paket_id} className="bg-[#16233a] p-5 rounded-xl">
+        <h1 className="text-2xl font-bold text-white mt-1">
+          Pilih paket terbaik
+          <span className="text-[#64748B] font-medium">
+            {" "}
+            — sesuai kebutuhanmu
+          </span>
+        </h1>
 
-              <h3 className="text-lg font-semibold">{p.nama_paket}</h3>
+      </div>
 
-              <p className="text-sm text-gray-400">
-                Harga: Rp {p.harga}
-              </p>
+      {/* PACKAGES */}
+      <div className="grid grid-cols-3 gap-4">
 
-              <p className="text-sm text-gray-400">
-                Durasi: {p.durasi_hari} hari
-              </p>
+        {packages.map((p) => {
+          const activePackage = isActive(
+            p.paket_id
+          );
 
-              <p className="text-sm text-gray-400">
-                Batas Course: {p.batas_materi ?? "Unlimited"}
-              </p>
+          return (
+            <div
+              key={p.paket_id}
+              className={`
+                relative
+                rounded-2xl
+                border
+                p-5
+                transition
 
+                ${
+                  activePackage
+                    ? `
+                      bg-[#081926]
+                      border-cyan-400/40
+                    `
+                    : `
+                      bg-[#101C38]
+                      border-white/5
+                      hover:border-cyan-400/20
+                    `
+                }
+              `}
+            >
+
+              {/* ACTIVE BADGE */}
+              {activePackage && (
+                <div
+                  className="
+                    absolute
+                    top-4
+                    right-4
+                    px-3 py-1
+                    rounded-full
+                    bg-cyan-400/10
+                    border border-cyan-400/20
+                    text-cyan-400
+                    text-xs
+                    font-semibold
+                  "
+                >
+                  Paket Aktif
+                </div>
+              )}
+
+              {/* TITLE */}
+              <h2 className="text-2xl font-bold text-white">
+                {p.nama_paket}
+              </h2>
+
+              {/* PRICE */}
+              <div className="mt-5">
+
+                <div className="flex items-end gap-2">
+
+                  <span className="text-4xl font-bold text-white">
+                    Rp {formatPrice(p.harga)}
+                  </span>
+
+                  <span className="text-[#64748B] mb-1">
+                    /bulan
+                  </span>
+
+                </div>
+
+              </div>
+
+              {/* INFO */}
+              <div className="mt-6 space-y-4 text-sm">
+
+                <div>
+                  <p className="text-[#64748B]">
+                    Durasi
+                  </p>
+
+                  <p className="text-white font-semibold mt-1">
+                    {p.durasi_hari} hari
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-[#64748B]">
+                    Batas Course
+                  </p>
+
+                  <p className="text-white font-semibold mt-1">
+                    {p.batas_materi ??
+                      "Unlimited"}
+                  </p>
+                </div>
+
+              </div>
+
+              {/* BUTTON */}
               <button
-                disabled={isActive(p.paket_id)}
-                onClick={() => navigate(`/transaksi?paket=${p.paket_id}`)}
-                className={`mt-3 w-full py-2 rounded 
-                ${isActive(p.paket_id)
-                    ? "bg-gray-600 cursor-not-allowed"
-                    : "bg-cyan-500 text-black"
-                  }`}
+                disabled={activePackage}
+                onClick={() =>
+                  navigate(
+                    `/transaksi?paket=${p.paket_id}`
+                  )
+                }
+                className={`
+                  mt-7
+                  w-full
+                  py-3
+                  rounded-xl
+                  border
+                  font-semibold
+                  text-base
+                  transition
+
+                  ${
+                    activePackage
+                      ? `
+                        bg-cyan-400
+                        text-black
+                        border-cyan-400
+                        cursor-not-allowed
+                      `
+                      : `
+                        border-white/10
+                        text-white
+                        hover:bg-cyan-400
+                        hover:text-black
+                        hover:border-cyan-400
+                      `
+                  }
+                `}
               >
-                {isActive(p.paket_id) ? "Paket Aktif" : "Pilih Paket"}
+
+                {activePackage
+                  ? "Paket Aktif"
+                  : "Pilih Paket"}
+
               </button>
 
             </div>
-          ))}
-        </div>
-
-        {/* MEMBERSHIP AKTIF */}
-        {active && (
-          <div className="mt-6 bg-[#1e2a45] p-5 rounded-xl">
-            <h3 className="text-lg mb-2">Paket Aktif</h3>
-
-            <p className="font-semibold text-cyan-400">
-              {active.nama_paket}
-            </p>
-
-            <div className="flex justify-between mt-3 text-sm text-gray-400">
-              <div>
-                <p>Mulai</p>
-                <p>{active.tanggal_mulai}</p>
-              </div>
-
-              <div>
-                <p>Berakhir</p>
-                <p>{active.tanggal_berakhir}</p>
-              </div>
-
-              <div>
-                <p>Status</p>
-                <p className="text-green-400">Aktif</p>
-              </div>
-            </div>
-
-            <button
-              onClick={() => navigate(`/transaksi?paket=${active.paket_id}`)}
-              className="mt-4 bg-cyan-500 px-4 py-2 rounded text-black"
-            >
-              Perpanjang
-            </button>
-          </div>
-        )}
+          );
+        })}
 
       </div>
+
+      {/* ACTIVE MEMBERSHIP */}
+      {active && (
+
+        <div
+          className="
+            mt-6
+            bg-[#101C38]
+            border border-cyan-400/10
+            rounded-2xl
+            p-6
+          "
+        >
+
+          <p className="text-[#64748B] text-sm uppercase tracking-wide">
+            Membership Aktif
+          </p>
+
+          <h2 className="text-3xl font-bold text-cyan-400 mt-2">
+            {active.nama_paket}
+          </h2>
+
+          <div className="grid grid-cols-3 gap-8 mt-6">
+
+            <div>
+              <p className="text-[#64748B] text-sm">
+                Mulai
+              </p>
+
+              <p className="text-white font-semibold mt-1">
+                {formatDate(
+                  active.tanggal_mulai
+                )}
+              </p>
+            </div>
+
+            <div>
+              <p className="text-[#64748B] text-sm">
+                Berakhir
+              </p>
+
+              <p className="text-white font-semibold mt-1">
+                {formatDate(
+                  active.tanggal_berakhir
+                )}
+              </p>
+            </div>
+
+            <div>
+              <p className="text-[#64748B] text-sm">
+                Status
+              </p>
+
+              <p className="text-green-400 font-semibold mt-1">
+                Aktif
+              </p>
+            </div>
+
+          </div>
+
+          {/* BUTTON */}
+          <button
+            onClick={() =>
+              navigate(
+                `/transaksi?paket=${active.paket_id}`
+              )
+            }
+            className="
+              mt-6
+              px-5 py-3
+              rounded-xl
+              border border-white/10
+              text-white
+              font-semibold
+              hover:bg-cyan-400
+              hover:text-black
+              hover:border-cyan-400
+              transition
+            "
+          >
+            Perpanjang Membership
+          </button>
+
+        </div>
+
+      )}
+
     </DashboardLayout>
   );
 }

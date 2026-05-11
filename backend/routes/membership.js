@@ -74,10 +74,17 @@ router.post("/pay", auth, async (req, res) => {
   const { subskripsiId } = req.body;
 
   try {
+
     const [sub] = await db.execute(
       "SELECT * FROM subskripsi WHERE subskripsi_id=?",
       [subskripsiId]
     );
+
+    if (sub.length === 0) {
+      return res.status(404).json({
+        message: "Subskripsi tidak ditemukan"
+      });
+    }
 
     const userId = sub[0].user_id;
 
@@ -86,54 +93,42 @@ router.post("/pay", auth, async (req, res) => {
       [sub[0].paket_id]
     );
 
+    if (paket.length === 0) {
+      return res.status(404).json({
+        message: "Paket tidak ditemukan"
+      });
+    }
+
     const durasi = paket[0].durasi_hari;
 
-    const [active] = await db.execute(`
-      SELECT * FROM subskripsi
-      WHERE user_id=? AND status=true AND tanggal_berakhir >= CURDATE()
-      LIMIT 1
-    `, [userId]);
+    await db.execute(`
+  UPDATE subskripsi
+  SET status = 0
+  WHERE user_id = ?
+`, [userId]);
 
-    let baseDate;
+    await db.execute(`
+  UPDATE subskripsi
+  SET 
+    status = 1,
+    tanggal_mulai = CURDATE(),
+    tanggal_berakhir = DATE_ADD(CURDATE(), INTERVAL ? DAY)
+  WHERE subskripsi_id = ?
+`, [durasi, subskripsiId]);
 
-    if (active.length > 0) {
-      baseDate = active[0].tanggal_berakhir;
-    } else {
-      baseDate = null;
-    }
-
-    await db.execute(
-      "UPDATE transaksi SET status_pembayaran='paid' WHERE subskripsi_id=?",
-      [subskripsiId]
-    );
-
-    if (baseDate) {
-      await db.execute(`
-        UPDATE subskripsi 
-        SET status=true,
-            tanggal_mulai=CURDATE(),
-            tanggal_berakhir=DATE_ADD(?, INTERVAL ? DAY)
-        WHERE subskripsi_id=?
-      `, [baseDate, durasi, subskripsiId]);
-    } else {
-      await db.execute(`
-        UPDATE subskripsi 
-        SET status=true,
-            tanggal_mulai=CURDATE(),
-            tanggal_berakhir=DATE_ADD(CURDATE(), INTERVAL ? DAY)
-        WHERE subskripsi_id=?
-      `, [durasi, subskripsiId]);
-    }
-
-    res.json({ message: "Membership aktif / diperpanjang" });
+    res.json({
+      message: "Membership aktif / diperpanjang"
+    });
 
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({
+      message: "Server error"
+    });
   }
 });
 
-router.post("/enroll", auth, checkCourseLimit,async (req, res) => {
+router.post("/enroll", auth, checkCourseLimit, async (req, res) => {
   const userId = req.user.id;
 
   const limit = await getUserLimit(userId);
@@ -183,6 +178,37 @@ router.get("/limit", auth, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });
+  }
+});
+
+router.get("/my-transactions", auth, async (req, res) => {
+  const userId = req.user.id;
+
+  try {
+    const [rows] = await db.execute(`
+      SELECT 
+        t.transaksi_id,
+        t.tanggal_transaksi,
+        t.metode_pembayaran,
+        t.jumlah_bayar,
+        t.status_pembayaran,
+        p.nama_paket
+      FROM transaksi t
+      JOIN subskripsi s 
+        ON t.subskripsi_id = s.subskripsi_id
+      JOIN paket_membership p
+        ON s.paket_id = p.paket_id
+      WHERE s.user_id = ?
+      ORDER BY t.tanggal_transaksi DESC
+    `, [userId]);
+
+    res.json(rows);
+
+  } catch (err) {
+    console.error("GET /my-transactions error:", err);
+    res.status(500).json({
+      message: "Server error"
+    });
   }
 });
 
