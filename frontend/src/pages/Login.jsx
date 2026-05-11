@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { API_URL } from "../api";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -9,7 +10,7 @@ export default function Login() {
     e.preventDefault();
 
     try {
-      const res = await fetch("http://localhost:5000/auth/login", {
+      const res = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -33,6 +34,7 @@ export default function Login() {
     } catch (err) {
       console.error(err);
       alert("Gagal connect ke server");
+      console.log(import.meta.env.VITE_API_URL);
     }
   };
 

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import DashboardLayout from "../layout/DashboardLayout";
+import { API_URL } from "../api";
 
 export default function Profile() {
   const [profile, setProfile] = useState({
@@ -17,7 +18,7 @@ export default function Profile() {
   useEffect(() => {
     const token = localStorage.getItem("token");
 
-    fetch("http://localhost:5000/user/profile", {
+    fetch(`${API_URL}/user/profile`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -55,7 +56,7 @@ export default function Profile() {
       const token = localStorage.getItem("token");
 
       const res = await fetch(
-        "http://localhost:5000/user/update-profile",
+        `${API_URL}/user/update-profile`,
         {
           method: "PUT",
           headers: {

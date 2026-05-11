@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import DashboardLayout from "../layout/DashboardLayout";
+import { API_URL } from "../api";
 
 export default function Courses() {
   const [courses, setCourses] = useState([]);
@@ -10,7 +11,7 @@ export default function Courses() {
   useEffect(() => {
     const token = localStorage.getItem("token");
 
-    fetch("http://localhost:5000/membership/limit", {
+    fetch(`${API_URL}/membership/limit`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -24,11 +25,11 @@ export default function Courses() {
   useEffect(() => {
     const token = localStorage.getItem("token");
 
-    fetch("http://localhost:5000/courses")
+    fetch(`${API_URL}/courses`)
       .then((res) => res.json())
       .then(setCourses);
 
-    fetch("http://localhost:5000/courses/my-courses", {
+    fetch(`${API_URL}/courses/my-courses`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -64,7 +65,7 @@ export default function Courses() {
 
     try {
       const res = await fetch(
-        "http://localhost:5000/courses/add-course",
+        `${API_URL}/courses/add-course`,
         {
           method: "POST",
           headers: {

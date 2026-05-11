@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "../layout/DashboardLayout";
+import { API_URL } from "../api";
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
@@ -27,7 +28,7 @@ export default function Dashboard() {
     }
 
     // PROFILE
-    fetch("http://localhost:5000/user/profile", {
+    fetch(`${API_URL}/user/profile`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -43,7 +44,7 @@ export default function Dashboard() {
       });
 
     // MY COURSES
-    fetch("http://localhost:5000/courses/my-courses", {
+    fetch(`${API_URL}/courses/my-courses`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -52,7 +53,7 @@ export default function Dashboard() {
       .then((data) => setCourses(data.data || []));
 
     // MEMBERSHIP
-    fetch("http://localhost:5000/membership/active", {
+    fetch(`${API_URL}/membership/active`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import DashboardLayout from "../layout/DashboardLayout";
+import { API_URL } from "../api";
 
 export default function Transaksi() {
   const [params] = useSearchParams();
@@ -43,7 +44,7 @@ export default function Transaksi() {
     const token = localStorage.getItem("token");
 
     // AMBIL PAKET
-    fetch("http://localhost:5000/membership/packages")
+    fetch(`${API_URL}/membership/packages`)
       .then((res) => res.json())
       .then((data) => {
         const found = data.find(
@@ -55,7 +56,7 @@ export default function Transaksi() {
 
     // AMBIL RIWAYAT
     fetch(
-      "http://localhost:5000/membership/my-transactions",
+      `${API_URL}/membership/my-transactions`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -73,7 +74,7 @@ export default function Transaksi() {
 
       // CREATE TRANSACTION
       const res = await fetch(
-        "http://localhost:5000/membership/create-transaction",
+        `${API_URL}/membership/create-transaction`,
         {
           method: "POST",
           headers: {
@@ -97,7 +98,7 @@ export default function Transaksi() {
 
       // PAY
       const res2 = await fetch(
-        "http://localhost:5000/membership/pay",
+        `${API_URL}/membership/pay`,
         {
           method: "POST",
           headers: {

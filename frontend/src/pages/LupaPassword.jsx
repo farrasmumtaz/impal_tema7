@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { API_URL } from "../api";
 
 export default function LupaPassword() {
   const [email, setEmail] = useState("");
@@ -19,7 +20,7 @@ export default function LupaPassword() {
       setLoading(true);
 
       const res = await fetch(
-        "http://localhost:5000/auth/forgot-password",
+        `${API_URL}/auth/forgot-password`,
         {
           method: "POST",
           headers: {

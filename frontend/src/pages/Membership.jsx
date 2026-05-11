@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import DashboardLayout from "../layout/DashboardLayout";
 import { useNavigate } from "react-router-dom";
+import { API_URL } from "../api";
 
 export default function Membership() {
   const [packages, setPackages] = useState([]);
@@ -10,7 +11,7 @@ export default function Membership() {
 
   // PACKAGES
   useEffect(() => {
-    fetch("http://localhost:5000/membership/packages")
+    fetch(`${API_URL}/membership/packages`)
       .then((res) => res.json())
       .then(setPackages);
   }, []);
@@ -19,7 +20,7 @@ export default function Membership() {
   useEffect(() => {
     const token = localStorage.getItem("token");
 
-    fetch("http://localhost:5000/membership/active", {
+    fetch(`${API_URL}/membership/active`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

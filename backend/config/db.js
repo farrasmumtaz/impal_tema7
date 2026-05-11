@@ -18,4 +18,13 @@ const db = mysql.createPool({
   connectTimeout: 10000
 });
 
+db.getConnection()
+  .then(conn => {
+    console.log("Database connected");
+    conn.release();
+  })
+  .catch(err => {
+    console.error("Database connection failed:", err);
+  });
+  
 module.exports = db;
