@@ -1,7 +1,7 @@
 const mysql = require("mysql2/promise");
 require("dotenv").config();
 
-const db = mysql.createPool({
+const dbConfig = {
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
@@ -16,7 +16,15 @@ const db = mysql.createPool({
   keepAliveInitialDelay: 0,
 
   connectTimeout: 10000
-});
+};
+
+if (process.env.DB_SSL === "true") {
+  dbConfig.ssl = {
+    rejectUnauthorized: false
+  };
+}
+
+const db = mysql.createPool(dbConfig);
 
 db.getConnection()
   .then(conn => {
@@ -26,5 +34,5 @@ db.getConnection()
   .catch(err => {
     console.error("Database connection failed:", err);
   });
-  
+
 module.exports = db;
