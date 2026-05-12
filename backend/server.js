@@ -17,13 +17,15 @@ app.use(rateLimit({
   max: 100
 }));
 
-app.use(cors({
-  origin: ["http://localhost:5173"],
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true
-}));
-
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "https://impal-tema7-9xsw.vercel.app"
+    ],
+    credentials: true
+  })
+);
 app.use(express.json());
 
 app.use("/auth", require("./routes/auth"));
