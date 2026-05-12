@@ -48,8 +48,8 @@ router.post("/create-transaction", auth, async (req, res) => {
     }
 
     const [sub] = await db.execute(
-      `INSERT INTO subskripsi (user_id, paket_id, status)
-       VALUES (?, ?, false)`,
+      `INSERT INTO subskripsi (user_id, paket_id, status, tanggal_mulai, tanggal_berakhir)
+      VALUES (?, ?, false, NOW(), DATE_ADD(NOW(), INTERVAL 30 DAY))`,
       [userId, paketId]
     );
 

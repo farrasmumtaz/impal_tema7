@@ -42,78 +42,86 @@ export default function CourseDetail() {
   if (!course) {
     return (
       <DashboardLayout>
+        <div className="text-white p-10">
+          Loading...
+        </div>
+      </DashboardLayout>
+    );
+  }
+  return (
+    <DashboardLayout>
 
-        <div className="max-w-4xl mx-auto">
+      <div className="max-w-4xl mx-auto">
 
-          {/* HEADER */}
-          <div className="mb-8">
+        {/* HEADER */}
+        <div className="mb-8">
 
-            <p className="text-[#64748B] text-sm">
-              Course Detail
-            </p>
+          <p className="text-[#64748B] text-sm">
+            Course Detail
+          </p>
 
-            <h1 className="text-3xl font-bold text-white mt-1 leading-tight">
-              {course.title}
-            </h1>
+          <h1 className="text-3xl font-bold text-white mt-1 leading-tight">
+            {course.title}
+          </h1>
 
-            <p className="text-[#64748B] mt-3">
-              Materi pembelajaran interaktif
-            </p>
+          <p className="text-[#64748B] mt-3">
+            Materi pembelajaran interaktif
+          </p>
 
-          </div>
+        </div>
 
-          {/* CONTENT */}
-          <div
-            className="
+        {/* CONTENT */}
+        <div
+          className="
             bg-[#101C38]
             border border-white/5
             rounded-2xl
             p-7
           "
-          >
+        >
 
-            {/* TOP INFO */}
-            <div
-              className="
+          {/* TOP INFO */}
+          <div
+            className="
               flex items-center justify-between
               border-b border-white/5
               pb-5 mb-6
             "
-            >
+          >
 
-              <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4">
 
-                {/* ICON */}
-                <div
-                  className="
+              {/* ICON */}
+              <div
+                className="
                   w-12 h-12
                   rounded-xl
                   bg-cyan-400/10
                   text-cyan-300
                   flex items-center justify-center
                 "
-                >
-                  <div className="w-3 h-3 border border-current" />
-                </div>
+              >
+                <div className="w-3 h-3 border border-current" />
+              </div>
 
-                {/* INFO */}
-                <div>
+              {/* INFO */}
+              <div>
 
-                  <h2 className="text-lg font-semibold text-white">
-                    {course.title}
-                  </h2>
+                <h2 className="text-lg font-semibold text-white">
+                  {course.title}
+                </h2>
 
-                  <p className="text-sm text-[#64748B] mt-1">
-                    Materi pembelajaran
-                  </p>
-
-                </div>
+                <p className="text-sm text-[#64748B] mt-1">
+                  Materi pembelajaran
+                </p>
 
               </div>
 
-              {/* STATUS */}
-              <div
-                className="
+            </div>
+
+            {/* STATUS */}
+            <div
+              className="
                 px-3 py-1
                 rounded-full
                 bg-cyan-400/10
@@ -122,35 +130,35 @@ export default function CourseDetail() {
                 text-xs
                 font-semibold
               "
-              >
-                Active
-              </div>
-
+            >
+              Active
             </div>
 
-            {/* COURSE CONTENT */}
-            <div
-              className="
+          </div>
+
+          {/* COURSE CONTENT */}
+          <div
+            className="
               text-[#D6E1FF]
               leading-8
               whitespace-pre-wrap
               text-[15px]
             "
-            >
-              {course.content}
-            </div>
-
+          >
+            {course.content}
           </div>
 
-          {/* ACTION */}
-          <div className="flex justify-between mt-6">
+        </div>
 
-            {/* BACK */}
-            <button
-              onClick={() =>
-                window.history.back()
-              }
-              className="
+        {/* ACTION */}
+        <div className="flex justify-between mt-6">
+
+          {/* BACK */}
+          <button
+            onClick={() =>
+              window.history.back()
+            }
+            className="
               px-5 py-2.5
               rounded-xl
               border border-white/10
@@ -159,18 +167,18 @@ export default function CourseDetail() {
               hover:bg-white/5
               transition
             "
-            >
-              Kembali
-            </button>
+          >
+            Kembali
+          </button>
 
-            {/* DELETE */}
-            {!confirmDelete ? (
+          {/* DELETE */}
+          {!confirmDelete ? (
 
-              <button
-                onClick={() =>
-                  setConfirmDelete(true)
-                }
-                className="
+            <button
+              onClick={() =>
+                setConfirmDelete(true)
+              }
+              className="
                 px-5 py-2.5
                 rounded-xl
                 bg-red-500
@@ -179,17 +187,17 @@ export default function CourseDetail() {
                 hover:bg-red-600
                 transition
               "
-              >
-                Hapus Course
-              </button>
+            >
+              Hapus Course
+            </button>
 
-            ) : (
+          ) : (
 
-              <div className="flex gap-3">
+            <div className="flex gap-3">
 
-                <button
-                  onClick={handleDelete}
-                  className="
+              <button
+                onClick={handleDelete}
+                className="
                   px-5 py-2.5
                   rounded-xl
                   bg-red-600
@@ -198,15 +206,15 @@ export default function CourseDetail() {
                   hover:bg-red-700
                   transition
                 "
-                >
-                  Yakin Hapus
-                </button>
+              >
+                Yakin Hapus
+              </button>
 
-                <button
-                  onClick={() =>
-                    setConfirmDelete(false)
-                  }
-                  className="
+              <button
+                onClick={() =>
+                  setConfirmDelete(false)
+                }
+                className="
                   px-5 py-2.5
                   rounded-xl
                   border border-white/10
@@ -215,19 +223,18 @@ export default function CourseDetail() {
                   hover:bg-white/5
                   transition
                 "
-                >
-                  Batal
-                </button>
+              >
+                Batal
+              </button>
 
-              </div>
+            </div>
 
-            )}
-
-          </div>
+          )}
 
         </div>
 
-      </DashboardLayout>
-    );
-  }
+      </div>
+
+    </DashboardLayout>
+  );
 }
