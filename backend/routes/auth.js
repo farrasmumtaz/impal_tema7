@@ -49,7 +49,7 @@ router.post("/register", async (req, res) => {
       await conn.rollback();
       return res.status(400).json({ message: "Nama belakang minimal 2 karakter" });
     }
-    
+
     // 2. hash password
     const hashed = await bcrypt.hash(password, 10);
 
@@ -97,50 +97,98 @@ router.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const [rows] = await db.execute(
+
+    // ================= CEK USER =================
+    const [userRows] = await db.execute(
       "SELECT * FROM users WHERE email = ?",
       [email]
     );
 
-    if (rows.length === 0 && !rows[0]) {
-      return res.status(401).json({ message: "Email tidak ditemukan dan Password salah" });
+    // ================= JIKA USER ADA =================
+    if (userRows.length > 0) {
+
+      const user = userRows[0];
+
+      const match = await bcrypt.compare(password, user.password);
+
+      if (!match) {
+        return res.status(401).json({
+          message: "Password salah"
+        });
+      }
+
+      const token = jwt.sign(
+        {
+          id: user.user_id,
+          email: user.email,
+          role: "user",
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: "1h" }
+      );
+
+      const { password: _, ...safeUser } = user;
+
+      return res.json({
+        message: "Login user berhasil",
+        token,
+        user: {
+          ...safeUser,
+          role: "user"
+        }
+      });
     }
-    if (rows.length === 0) {
-      return res.status(401).json({ message: "Email tidak ditemukan" });
-    }
 
-    const user = rows[0];
-
-    // compare bcrypt
-    const match = await bcrypt.compare(password, user.password);
-
-    if (!match) {
-      return res.status(401).json({ message: "Password salah" });
-    }
-
-    // generate token
-    const token = jwt.sign(
-      {
-        id: user.user_id,
-        email: user.email,
-        role: user.role,
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: "1h" }
+    // ================= CEK ADMIN =================
+    const [adminRows] = await db.execute(
+      "SELECT * FROM admin WHERE email = ?",
+      [email]
     );
 
-    // hapus password dari response
-    const { password: _, ...safeUser } = user;
+    if (adminRows.length > 0) {
 
-    res.json({
-      message: "Login berhasil",
-      token,
-      user: safeUser,
+      const admin = adminRows[0];
+
+      if (password !== admin.password) {
+        return res.status(401).json({
+          message: "Password admin salah"
+        });
+      }
+
+      const token = jwt.sign(
+        {
+          id: admin.admin_id,
+          email: admin.email,
+          role: "admin",
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: "1h" }
+      );
+
+      const { password: _, ...safeAdmin } = admin;
+
+      return res.json({
+        message: "Login admin berhasil",
+        token,
+        user: {
+          ...safeAdmin,
+          role: "admin"
+        }
+      });
+    }
+
+    // ================= TIDAK ADA =================
+    return res.status(401).json({
+      message: "Email tidak ditemukan"
     });
 
   } catch (err) {
+
     console.error("LOGIN ERROR:", err);
-    res.status(500).json({ message: "Server error" });
+
+    res.status(500).json({
+      message: "Server error"
+    });
   }
 });
 module.exports = router;

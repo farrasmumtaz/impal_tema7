@@ -163,7 +163,7 @@ export default function Profile() {
                   text-sm
                 "
               >
-                ⚡ Premium
+                {profile.nama_depan} {profile.nama_belakang}
               </div>
 
             </div>

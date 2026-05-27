@@ -30,7 +30,20 @@ export default function Login() {
 
       localStorage.setItem("token", data.token);
 
-      window.location.href = "/dashboard";
+      localStorage.setItem(
+        "user",
+        JSON.stringify(data.user)
+      );
+
+      if (data.user.role === "admin") {
+
+        window.location.href = "/admin";
+
+      } else {
+
+        window.location.href = "/dashboard";
+
+      }
     } catch (err) {
       console.error(err);
       alert("Gagal connect ke server");
