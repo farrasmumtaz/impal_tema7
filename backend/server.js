@@ -22,7 +22,8 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "https://impal-tema7-9xsw.vercel.app"
+      "https://impal-tema7-9xsw.vercel.app",
+      "https://impal-tema7-9xsw-git-main-farras-mumtaz-projects.vercel.app"
     ],
     credentials: true
   })
