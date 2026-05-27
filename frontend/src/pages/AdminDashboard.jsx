@@ -14,9 +14,7 @@ export default function AdminDashboard() {
 
     const API = import.meta.env.VITE_API_URL;
 
-
-
-    // ================= GET COURSES =================
+    // ================= FETCH COURSES =================
     const fetchCourses = useCallback(async () => {
 
         try {
@@ -33,23 +31,35 @@ export default function AdminDashboard() {
 
     }, [API]);
 
-
-
     useEffect(() => {
-
-        const loadCourses = async () => {
-            await fetchCourses();
+        const fetchCourses = async () => {
+            const res = await axios.get(`${API}/courses`);
+            setCourses(res.data);
         };
+        fetchCourses();
+    }, [API]);
 
-        loadCourses();
 
-    }, [fetchCourses]);
 
+    // ================= RESET FORM =================
+    const resetForm = () => {
+
+        setEditingId(null);
+
+        setTitle("");
+
+        setDescription("");
+
+    };
 
 
 
     // ================= ADD COURSE =================
     const handleAddCourse = async () => {
+
+        if (!title || !description) {
+            return alert("Semua field wajib diisi");
+        }
 
         try {
 
@@ -68,48 +78,22 @@ export default function AdminDashboard() {
 
             alert("Course berhasil ditambahkan");
 
-            setTitle("");
-            setDescription("");
+            resetForm();
 
             fetchCourses();
 
         } catch (err) {
+
             console.error(err);
+
             alert("Gagal tambah course");
+
         }
     };
 
 
 
-
-    // ================= DELETE COURSE =================
-    const handleDelete = async (id) => {
-
-        try {
-
-            await axios.delete(
-                `${API}/admin/courses/${id}`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                }
-            );
-
-            alert("Course berhasil dihapus");
-
-            fetchCourses();
-
-        } catch (err) {
-            console.error(err);
-            alert("Gagal hapus");
-        }
-    };
-
-
-
-
-    // ================= EDIT COURSE =================
+    // ================= EDIT =================
     const handleEdit = (course) => {
 
         setEditingId(course.course_id);
@@ -117,13 +101,21 @@ export default function AdminDashboard() {
         setTitle(course.title);
 
         setDescription(course.description || "");
+
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
     };
 
 
 
-
-    // ================= UPDATE COURSE =================
+    // ================= UPDATE =================
     const handleUpdate = async () => {
+
+        if (!title || !description) {
+            return alert("Semua field wajib diisi");
+        }
 
         try {
 
@@ -142,22 +134,64 @@ export default function AdminDashboard() {
 
             alert("Course berhasil diupdate");
 
-            setEditingId(null);
-
-            setTitle("");
-            setDescription("");
+            resetForm();
 
             fetchCourses();
 
         } catch (err) {
+
             console.error(err);
+
             alert("Gagal update");
+
+        }
+    };
+
+
+
+    // ================= DELETE =================
+    const handleDelete = async (id, title) => {
+
+        const firstConfirm = window.confirm(
+            `Yakin ingin menghapus course "${title}" ?`
+        );
+
+        if (!firstConfirm) return;
+
+        const secondConfirm = window.confirm(
+            "Course akan dihapus permanen. Lanjutkan?"
+        );
+
+        if (!secondConfirm) return;
+
+        try {
+
+            await axios.delete(
+                `${API}/admin/courses/${id}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
+
+            alert("Course berhasil dihapus");
+
+            fetchCourses();
+
+        } catch (err) {
+
+            console.error(err);
+
+            alert("Gagal hapus course");
+
         }
     };
 
 
 
     return (
+
         <div
             style={{
                 minHeight: "100vh",
@@ -167,7 +201,13 @@ export default function AdminDashboard() {
             }}
         >
 
-            <h1 style={{ fontSize: "32px", marginBottom: "20px" }}>
+            <h1
+                style={{
+                    fontSize: "38px",
+                    marginBottom: "25px",
+                    fontWeight: "bold"
+                }}
+            >
                 Admin Dashboard
             </h1>
 
@@ -177,19 +217,50 @@ export default function AdminDashboard() {
             <div
                 style={{
                     background: "#111c44",
-                    padding: "20px",
-                    borderRadius: "10px",
-                    marginBottom: "30px"
+                    padding: "25px",
+                    borderRadius: "16px",
+                    marginBottom: "40px",
+                    border: editingId
+                        ? "2px solid orange"
+                        : "2px solid transparent"
                 }}
             >
 
-                <h2>
+                <div
+                    style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center"
+                    }}
+                >
+
+                    <h2>
+                        {
+                            editingId
+                                ? "✏️ Edit Course"
+                                : "➕ Tambah Course"
+                        }
+                    </h2>
+
                     {
-                        editingId
-                            ? "Edit Course"
-                            : "Tambah Course"
+                        editingId && (
+                            <div
+                                style={{
+                                    background: "orange",
+                                    color: "black",
+                                    padding: "8px 14px",
+                                    borderRadius: "8px",
+                                    fontWeight: "bold"
+                                }}
+                            >
+                                MODE EDIT
+                            </div>
+                        )
                     }
-                </h2>
+
+                </div>
+
+
 
                 <input
                     type="text"
@@ -198,68 +269,107 @@ export default function AdminDashboard() {
                     onChange={(e) => setTitle(e.target.value)}
                     style={{
                         width: "100%",
-                        padding: "12px",
-                        marginTop: "10px",
-                        borderRadius: "8px"
+                        padding: "14px",
+                        marginTop: "15px",
+                        borderRadius: "10px",
+                        border: "none",
+                        fontSize: "16px"
                     }}
                 />
 
+
+
                 <textarea
-                    placeholder="Deskripsi"
+                    placeholder="Deskripsi course"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     style={{
                         width: "100%",
-                        padding: "12px",
-                        marginTop: "10px",
-                        borderRadius: "8px",
-                        height: "120px"
+                        padding: "14px",
+                        marginTop: "15px",
+                        borderRadius: "10px",
+                        border: "none",
+                        fontSize: "16px",
+                        minHeight: "140px",
+                        resize: "vertical"
                     }}
                 />
 
 
 
-                {
-                    editingId ? (
-                        <button
-                            onClick={handleUpdate}
-                            style={{
-                                marginTop: "15px",
-                                padding: "12px 20px",
-                                background: "orange",
-                                border: "none",
-                                borderRadius: "8px",
-                                cursor: "pointer"
-                            }}
-                        >
-                            Update Course
-                        </button>
-                    ) : (
-                        <button
-                            onClick={handleAddCourse}
-                            style={{
-                                marginTop: "15px",
-                                padding: "12px 20px",
-                                background: "#00d4ff",
-                                border: "none",
-                                borderRadius: "8px",
-                                cursor: "pointer"
-                            }}
-                        >
-                            Tambah Course
-                        </button>
-                    )
-                }
+                <div
+                    style={{
+                        display: "flex",
+                        gap: "12px",
+                        marginTop: "20px"
+                    }}
+                >
+
+                    {
+                        editingId ? (
+                            <>
+                                <button
+                                    onClick={handleUpdate}
+                                    style={{
+                                        padding: "12px 24px",
+                                        background: "orange",
+                                        border: "none",
+                                        borderRadius: "10px",
+                                        cursor: "pointer",
+                                        fontWeight: "bold"
+                                    }}
+                                >
+                                    Update Course
+                                </button>
+
+                                <button
+                                    onClick={resetForm}
+                                    style={{
+                                        padding: "12px 24px",
+                                        background: "#444",
+                                        color: "white",
+                                        border: "none",
+                                        borderRadius: "10px",
+                                        cursor: "pointer",
+                                        fontWeight: "bold"
+                                    }}
+                                >
+                                    Batal Edit
+                                </button>
+                            </>
+                        ) : (
+                            <button
+                                onClick={handleAddCourse}
+                                style={{
+                                    padding: "12px 24px",
+                                    background: "#00d4ff",
+                                    border: "none",
+                                    borderRadius: "10px",
+                                    cursor: "pointer",
+                                    fontWeight: "bold"
+                                }}
+                            >
+                                Tambah Course
+                            </button>
+                        )
+                    }
+
+                </div>
 
             </div>
 
 
 
-
-            {/* LIST COURSES */}
+            {/* COURSE LIST */}
             <div>
 
-                <h2>Daftar Course</h2>
+                <h2
+                    style={{
+                        marginBottom: "20px"
+                    }}
+                >
+                    📚 Daftar Course
+                </h2>
 
                 {
                     courses.map((course) => (
@@ -268,43 +378,73 @@ export default function AdminDashboard() {
                             key={course.course_id}
                             style={{
                                 background: "#111c44",
-                                padding: "20px",
-                                borderRadius: "10px",
-                                marginTop: "15px"
+                                padding: "25px",
+                                borderRadius: "16px",
+                                marginBottom: "20px"
                             }}
                         >
 
-                            <h3>{course.title}</h3>
-
-                            <p>{course.description}</p>
-
-                            <button
-                                onClick={() => handleEdit(course)}
+                            <h3
                                 style={{
-                                    marginRight: "10px",
-                                    padding: "10px",
-                                    background: "orange",
-                                    border: "none",
-                                    borderRadius: "8px",
-                                    cursor: "pointer"
+                                    fontSize: "24px",
+                                    marginBottom: "10px"
                                 }}
                             >
-                                Edit
-                            </button>
+                                {course.title}
+                            </h3>
 
-                            <button
-                                onClick={() => handleDelete(course.course_id)}
+                            <p
                                 style={{
-                                    padding: "10px",
-                                    background: "red",
-                                    border: "none",
-                                    borderRadius: "8px",
-                                    cursor: "pointer",
-                                    color: "white"
+                                    color: "#c7d2fe",
+                                    lineHeight: "1.7",
+                                    marginBottom: "20px"
                                 }}
                             >
-                                Delete
-                            </button>
+                                {course.description}
+                            </p>
+
+                            <div
+                                style={{
+                                    display: "flex",
+                                    gap: "10px"
+                                }}
+                            >
+
+                                <button
+                                    onClick={() => handleEdit(course)}
+                                    style={{
+                                        padding: "10px 18px",
+                                        background: "orange",
+                                        border: "none",
+                                        borderRadius: "8px",
+                                        cursor: "pointer",
+                                        fontWeight: "bold"
+                                    }}
+                                >
+                                    Edit
+                                </button>
+
+                                <button
+                                    onClick={() =>
+                                        handleDelete(
+                                            course.course_id,
+                                            course.title
+                                        )
+                                    }
+                                    style={{
+                                        padding: "10px 18px",
+                                        background: "red",
+                                        color: "white",
+                                        border: "none",
+                                        borderRadius: "8px",
+                                        cursor: "pointer",
+                                        fontWeight: "bold"
+                                    }}
+                                >
+                                    Delete
+                                </button>
+
+                            </div>
 
                         </div>
 
