@@ -3,7 +3,7 @@ const router = express.Router();
 const crypto = require("crypto");
 const db = require("../config/db");
 
-router.post("/forgot-password", async (req, res) => {
+router.post("/reset-password", async (req, res) => {
   try {
 
     const { email } = req.body;
