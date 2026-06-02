@@ -2,19 +2,12 @@ import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 
 export default function AdminDashboard() {
-
     const [courses, setCourses] = useState([]);
-
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
-
     const [editingId, setEditingId] = useState(null);
-
     const token = localStorage.getItem("token");
-
     const API = import.meta.env.VITE_API_URL;
-
-    // ================= FETCH COURSES =================
     const fetchCourses = useCallback(async () => {
 
         try {
@@ -28,7 +21,6 @@ export default function AdminDashboard() {
             console.error(err);
 
         }
-
     }, [API]);
 
     useEffect(() => {
@@ -39,9 +31,6 @@ export default function AdminDashboard() {
         fetchCourses();
     }, [API]);
 
-
-
-    // ================= RESET FORM =================
     const resetForm = () => {
 
         setEditingId(null);
@@ -51,10 +40,6 @@ export default function AdminDashboard() {
         setDescription("");
 
     };
-
-
-
-    // ================= ADD COURSE =================
     const handleAddCourse = async () => {
 
         if (!title || !description) {
@@ -90,10 +75,6 @@ export default function AdminDashboard() {
 
         }
     };
-
-
-
-    // ================= EDIT =================
     const handleEdit = (course) => {
 
         setEditingId(course.course_id);
@@ -108,9 +89,6 @@ export default function AdminDashboard() {
         });
     };
 
-
-
-    // ================= UPDATE =================
     const handleUpdate = async () => {
 
         if (!title || !description) {
@@ -147,9 +125,6 @@ export default function AdminDashboard() {
         }
     };
 
-
-
-    // ================= DELETE =================
     const handleDelete = async (id, title) => {
 
         const firstConfirm = window.confirm(
@@ -188,8 +163,25 @@ export default function AdminDashboard() {
         }
     };
 
+    const handleLogout = () => {
 
+        const confirm1 = window.confirm(
+            "Apakah Anda yakin ingin logout?"
+        );
 
+        if (!confirm1) return;
+
+        const confirm2 = window.confirm(
+            "Anda akan keluar dari panel admin. Lanjutkan?"
+        );
+
+        if (!confirm2) return;
+
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+
+        window.location.href = "/";
+    };
     return (
 
         <div
@@ -200,7 +192,6 @@ export default function AdminDashboard() {
                 padding: "30px"
             }}
         >
-
             <h1
                 style={{
                     fontSize: "38px",
@@ -210,10 +201,12 @@ export default function AdminDashboard() {
             >
                 Admin Dashboard
             </h1>
-
-
-
-            {/* FORM */}
+            <button
+                onClick={handleLogout}
+                className="logout-btn"
+            >
+                Logout
+            </button>
             <div
                 style={{
                     background: "#111c44",
@@ -237,8 +230,8 @@ export default function AdminDashboard() {
                     <h2>
                         {
                             editingId
-                                ? "✏️ Edit Course"
-                                : "➕ Tambah Course"
+                                ? "Edit Course"
+                                : "Tambah Course"
                         }
                     </h2>
 
@@ -273,7 +266,10 @@ export default function AdminDashboard() {
                         marginTop: "15px",
                         borderRadius: "10px",
                         border: "none",
-                        fontSize: "16px"
+                        fontSize: "16px",
+                        background: "#0f172a",
+                        color: "white",
+                        outline: "none"
                     }}
                 />
 
@@ -291,7 +287,10 @@ export default function AdminDashboard() {
                         border: "none",
                         fontSize: "16px",
                         minHeight: "140px",
-                        resize: "vertical"
+                        resize: "vertical",
+                        background: "#0f172a",
+                        color: "white",
+                        outline: "none"
                     }}
                 />
 
@@ -368,7 +367,7 @@ export default function AdminDashboard() {
                         marginBottom: "20px"
                     }}
                 >
-                    📚 Daftar Course
+                    Daftar Course
                 </h2>
 
                 {

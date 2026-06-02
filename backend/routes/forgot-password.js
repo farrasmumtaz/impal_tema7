@@ -22,9 +22,15 @@ router.post("/forgot-password", async (req, res) => {
     [token, email]
   );
 
-  console.log(`http://localhost:5173/reset-password/${token}`);
+  const resetLink =
+    `${process.env.FRONTEND_URL}/reset-password/${token}`;
 
-  res.json({ message: "Link reset dikirim", resetLink: `http://localhost:5173/reset-password/${token}`});
+  console.log(resetLink);
+
+  res.json({
+    message: "Jika email terdaftar, link reset password telah dikirim",
+    resetLink: resetLink
+  });
 });
 
 module.exports = router;

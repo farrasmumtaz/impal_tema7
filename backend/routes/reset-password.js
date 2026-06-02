@@ -1,32 +1,55 @@
 const express = require("express");
 const router = express.Router();
-const bcrypt = require("bcryptjs");
+const crypto = require("crypto");
 const db = require("../config/db");
 
-router.post("/reset-password", async (req, res) => {
-  const { token, newPassword } = req.body;
+router.post("/forgot-password", async (req, res) => {
+  try {
 
-  const [user] = await db.execute(
-    "SELECT * FROM users WHERE reset_token = ? AND reset_expired > NOW()",
-    [token]
-  );
+    const { email } = req.body;
 
-  if (user.length === 0) {
-    return res.status(400).json({ message: "Token tidak valid / expired" });
+    const [user] = await db.execute(
+      "SELECT * FROM users WHERE email = ?",
+      [email]
+    );
+
+    if (user.length === 0) {
+      return res.json({
+        message: "Jika email terdaftar, link reset password telah dikirim"
+      });
+    }
+
+    const token = crypto.randomBytes(32).toString("hex");
+
+    await db.execute(
+      `
+      UPDATE users
+      SET
+        reset_token = ?,
+        reset_expired = DATE_ADD(NOW(), INTERVAL 1 HOUR)
+      WHERE email = ?
+      `,
+      [token, email]
+    );
+
+    const resetLink =
+      `${process.env.FRONTEND_URL}/reset-password/${token}`;
+
+    console.log("RESET PASSWORD LINK:");
+    console.log(resetLink);
+
+    res.json({
+      message: "Jika email terdaftar, link reset password telah dikirim"
+    });
+
+  } catch (err) {
+
+    console.error(err);
+
+    res.status(500).json({
+      message: "Server error"
+    });
   }
-
-  if (!newPassword || newPassword.length < 6) {
-    return res.status(400).json({ message: "Password minimal 6 karakter" });
-  }
-
-  const hashed = await bcrypt.hash(newPassword, 10);
-
-  await db.execute(
-    "UPDATE users SET password = ?, reset_token = NULL, reset_expired = NULL WHERE reset_token = ?",
-    [hashed, token]
-  );
-
-  res.json({ message: "Password berhasil direset" });
 });
 
 module.exports = router;
