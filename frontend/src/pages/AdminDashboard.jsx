@@ -10,7 +10,14 @@ export default function AdminDashboard() {
     const [editingId, setEditingId] = useState(null);
 
     const API = import.meta.env.VITE_API_URL;
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
 
+    const totalPages = Math.ceil(transactions.length / itemsPerPage);
+    const paginatedTransactions = transactions.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+    );
     const fetchCourses = useCallback(async () => {
         try {
             const res = await axios.get(`${API}/courses`);
@@ -111,24 +118,6 @@ export default function AdminDashboard() {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
         window.location.href = "/";
-    };
-
-    const approveTransaction = async (id) => {
-        const token = localStorage.getItem("token");
-        if (!window.confirm("Verifikasi transaksi ini?")) return;
-        if (!window.confirm("Membership user akan diaktifkan. Lanjutkan?")) return;
-        try {
-            await axios.put(
-                `${API}/admin/transactions/${id}/approve`,
-                {},
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-            alert("Transaksi berhasil diverifikasi");
-            fetchTransactions();
-        } catch (err) {
-            console.error(err);
-            alert("Gagal verifikasi transaksi");
-        }
     };
     return (
 
@@ -422,102 +411,98 @@ export default function AdminDashboard() {
                         style={{
                             width: "100%",
                             color: "white",
-                            borderCollapse: "collapse"
+                            borderCollapse: "collapse",
+                            tableLayout: "fixed", // ← tambah ini
                         }}
                     >
-
                         <thead>
-
                             <tr>
-
-                                <th>ID</th>
-                                <th>User</th>
-                                <th>Email</th>
-                                <th>Paket</th>
-                                <th>Jumlah</th>
-                                <th>Status</th>
-                                <th>Tanggal</th>
-                                <th>Aksi</th>
-
+                                <th style={{ width: "5%", padding: "12px 8px", textAlign: "left" }}>ID</th>
+                                <th style={{ width: "10%", padding: "12px 8px", textAlign: "left" }}>User</th>
+                                <th style={{ width: "25%", padding: "12px 8px", textAlign: "left" }}>Email</th>
+                                <th style={{ width: "10%", padding: "12px 8px", textAlign: "left" }}>Paket</th>
+                                <th style={{ width: "12%", padding: "12px 8px", textAlign: "left" }}>Jumlah</th>
+                                <th style={{ width: "13%", padding: "12px 8px", textAlign: "left" }}>Tanggal</th>
                             </tr>
-
                         </thead>
-
                         <tbody>
-
-                            {
-                                transactions.map((trx) => (
-
-                                    <tr key={trx.transaksi_id}>
-
-                                        <td>{trx.transaksi_id}</td>
-
-                                        <td>{trx.username}</td>
-
-                                        <td>{trx.email}</td>
-
-                                        <td>{trx.nama_paket}</td>
-
-                                        <td>
-                                            Rp {Number(trx.jumlah_bayar).toLocaleString("id-ID")}
-                                        </td>
-
-                                        <td>
-
-                                            {
-                                                trx.status_pembayaran === "paid"
-                                                    ? "✅ Paid"
-                                                    : "⏳ Pending"
-                                            }
-
-                                        </td>
-
-                                        <td>
-                                            {
-                                                new Date(
-                                                    trx.tanggal_transaksi
-                                                ).toLocaleDateString("id-ID")
-                                            }
-                                        </td>
-
-                                        <td>
-
-                                            {
-                                                trx.status_pembayaran !== "paid" && (
-
-                                                    <button
-                                                        onClick={() =>
-                                                            approveTransaction(
-                                                                trx.transaksi_id
-                                                            )
-                                                        }
-                                                        style={{
-                                                            background: "green",
-                                                            color: "white",
-                                                            border: "none",
-                                                            padding: "8px 12px",
-                                                            borderRadius: "8px",
-                                                            cursor: "pointer"
-                                                        }}
-                                                    >
-                                                        Approve
-                                                    </button>
-
-                                                )
-                                            }
-
-                                        </td>
-
-                                    </tr>
-
-                                ))
-                            }
-
+                            {paginatedTransactions.map((trx) => (
+                                <tr key={trx.transaksi_id} style={{ borderTop: "1px solid #1e2d5a" }}>
+                                    <td style={{ padding: "12px 8px" }}>{trx.transaksi_id}</td>
+                                    <td style={{ padding: "12px 8px" }}>{trx.username}</td>
+                                    <td style={{ padding: "12px 8px", wordBreak: "break-all" }}>{trx.email}</td>
+                                    <td style={{ padding: "12px 8px" }}>{trx.nama_paket}</td>
+                                    <td style={{ padding: "12px 8px" }}>
+                                        Rp {Number(trx.jumlah_bayar).toLocaleString("id-ID")}
+                                    </td>
+                                    <td style={{ padding: "12px 8px" }}>
+                                        {new Date(trx.tanggal_transaksi).toLocaleDateString("id-ID")}
+                                    </td>
+                                </tr>
+                            ))}
                         </tbody>
-
                     </table>
-
                 </div>
+
+                {/* PAGINATION */}
+                {totalPages > 1 && (
+                    <div style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        gap: "8px",
+                        marginTop: "20px",
+                        flexWrap: "wrap"
+                    }}>
+                        <button
+                            onClick={() => setCurrentPage(1)}
+                            disabled={currentPage === 1}
+                            style={{ padding: "8px 12px", background: currentPage === 1 ? "#1e2d5a" : "#00d4ff", color: currentPage === 1 ? "#555" : "black", border: "none", borderRadius: "8px", cursor: currentPage === 1 ? "not-allowed" : "pointer", fontWeight: "bold" }}
+                        >«</button>
+
+                        <button
+                            onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
+                            disabled={currentPage === 1}
+                            style={{ padding: "8px 12px", background: currentPage === 1 ? "#1e2d5a" : "#00d4ff", color: currentPage === 1 ? "#555" : "black", border: "none", borderRadius: "8px", cursor: currentPage === 1 ? "not-allowed" : "pointer", fontWeight: "bold" }}
+                        >‹</button>
+
+                        {Array.from({ length: totalPages }, (_, i) => i + 1)
+                            .filter(page => page === 1 || page === totalPages || Math.abs(page - currentPage) <= 1)
+                            .reduce((acc, page, idx, arr) => {
+                                if (idx > 0 && page - arr[idx - 1] > 1) acc.push("...");
+                                acc.push(page);
+                                return acc;
+                            }, [])
+                            .map((item, idx) =>
+                                item === "..." ? (
+                                    <span key={`e-${idx}`} style={{ color: "#555", padding: "0 4px" }}>...</span>
+                                ) : (
+                                    <button
+                                        key={item}
+                                        onClick={() => setCurrentPage(item)}
+                                        style={{ padding: "8px 12px", background: currentPage === item ? "#00d4ff" : "#1e2d5a", color: currentPage === item ? "black" : "white", border: "none", borderRadius: "8px", cursor: "pointer", fontWeight: "bold", minWidth: "36px" }}
+                                    >{item}</button>
+                                )
+                            )
+                        }
+
+                        <button
+                            onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
+                            disabled={currentPage === totalPages}
+                            style={{ padding: "8px 12px", background: currentPage === totalPages ? "#1e2d5a" : "#00d4ff", color: currentPage === totalPages ? "#555" : "black", border: "none", borderRadius: "8px", cursor: currentPage === totalPages ? "not-allowed" : "pointer", fontWeight: "bold" }}
+                        >›</button>
+
+                        <button
+                            onClick={() => setCurrentPage(totalPages)}
+                            disabled={currentPage === totalPages}
+                            style={{ padding: "8px 12px", background: currentPage === totalPages ? "#1e2d5a" : "#00d4ff", color: currentPage === totalPages ? "#555" : "black", border: "none", borderRadius: "8px", cursor: currentPage === totalPages ? "not-allowed" : "pointer", fontWeight: "bold" }}
+                        >»</button>
+
+                        <span style={{ color: "#c7d2fe", fontSize: "14px", marginLeft: "8px" }}>
+                            Halaman {currentPage} dari {totalPages} ({transactions.length} transaksi)
+                        </span>
+                    </div>
+                )}
 
             </div>
         </div>
