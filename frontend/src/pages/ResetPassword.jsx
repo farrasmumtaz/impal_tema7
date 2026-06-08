@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { API_URL } from "../api";
+import { Eye, EyeOff } from "lucide-react"; 
 import "../auth.css";
 
 export default function ResetPassword() {
@@ -11,6 +12,9 @@ export default function ResetPassword() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [success, setSuccess] = useState(false);
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -41,6 +45,23 @@ export default function ResetPassword() {
     }
   };
 
+  // Gaya standar tombol ikon agar posisinya pas di dalam input field
+  // Gaya standar tombol ikon agar posisinya pas di dalam input field
+  const toggleButtonStyle = {
+    position: "absolute",
+    right: "15px",
+    top: "50%",
+    transform: "translateY(-50%)",
+    background: "none",
+    border: "none",
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    color: "#9ca3af",
+    padding: 0,
+    zIndex: 10,
+  };
+
   return (
     <div className="auth-page">
       <div className="auth-center">
@@ -53,28 +74,53 @@ export default function ResetPassword() {
           </p>
 
           <form onSubmit={handleSubmit}>
+
+            {/* PASSWORD BARU */}
             <div className="auth-field">
               <label>Password Baru</label>
-              <input
-                type="password"
-                placeholder="Min. 8 karakter"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                disabled={success}
-              />
+              <div style={{ position: "relative" }}> {/* Cukup gunakan position: "relative" */}
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Min. 8 karakter"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  disabled={success}
+                  style={{ paddingRight: "45px", width: "100%" }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={toggleButtonStyle}
+                  disabled={success}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
             </div>
 
+            {/* KONFIRMASI PASSWORD */}
             <div className="auth-field">
               <label>Konfirmasi Password</label>
-              <input
-                type="password"
-                placeholder="Ulangi password baru"
-                value={confirm}
-                onChange={(e) => setConfirm(e.target.value)}
-                required
-                disabled={success}
-              />
+              <div style={{ position: "relative" }}> {/* Cukup gunakan position: "relative" */}
+                <input
+                  type={showConfirm ? "text" : "password"}
+                  placeholder="Ulangi password baru"
+                  value={confirm}
+                  onChange={(e) => setConfirm(e.target.value)}
+                  required
+                  disabled={success}
+                  style={{ paddingRight: "45px", width: "100%" }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirm(!showConfirm)}
+                  style={toggleButtonStyle}
+                  disabled={success}
+                >
+                  {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
             </div>
 
             {/* PASSWORD MATCH HINT */}

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { API_URL } from "../api";
+import { Eye, EyeOff } from "lucide-react"; // 1. Import ikon Lucide
 import "../auth.css";
 
 export default function Register() {
@@ -14,6 +15,10 @@ export default function Register() {
     phone: "",
   });
   const [loading, setLoading] = useState(false);
+
+  // 2. Tambahkan state untuk visibilitas masing-masing kolom password
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -58,6 +63,19 @@ export default function Register() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Gaya standar tombol ikon agar posisinya pas di dalam input field
+  const toggleButtonStyle = {
+    position: "absolute",
+    right: "15px",
+    background: "none",
+    border: "none",
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    color: "#9ca3af", // Warna abu-abu elegan (slate-400)
+    padding: 0,
   };
 
   return (
@@ -133,30 +151,55 @@ export default function Register() {
               />
             </div>
 
-            {/* PASSWORD */}
+            {/* PASSWORD GRID */}
             <div className="auth-grid-2">
+              
+              {/* KOLOM PASSWORD UTAMA */}
               <div className="auth-field">
                 <label>Password</label>
-                <input
-                  type="password"
-                  name="password"
-                  placeholder="Min. 8 karakter"
-                  value={form.password}
-                  onChange={handleChange}
-                  required
-                />
+                <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    placeholder="Min. 8 karakter"
+                    value={form.password}
+                    onChange={handleChange}
+                    required
+                    style={{ paddingRight: "45px", width: "100%" }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    style={toggleButtonStyle}
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
               </div>
+
+              {/* KOLOM KONFIRMASI PASSWORD */}
               <div className="auth-field">
                 <label>Konfirmasi Password</label>
-                <input
-                  type="password"
-                  name="confirmPassword"
-                  placeholder="Ulangi password"
-                  value={form.confirmPassword}
-                  onChange={handleChange}
-                  required
-                />
+                <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+                  <input
+                    type={showConfirmPassword ? "text" : "password"}
+                    name="confirmPassword"
+                    placeholder="Ulangi password"
+                    value={form.confirmPassword}
+                    onChange={handleChange}
+                    required
+                    style={{ paddingRight: "45px", width: "100%" }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    style={toggleButtonStyle}
+                  >
+                    {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
               </div>
+
             </div>
 
             {/* PHONE */}

@@ -2,10 +2,13 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { API_URL } from "../api";
 import "../auth.css";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  // 1. Tambahkan state untuk mengontrol visibilitas password
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -69,19 +72,43 @@ export default function Login() {
 
             <div className="auth-field">
               <label>Password</label>
-              <input
-                type="password"
-                placeholder="Masukkan password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
+              
+              {/* 2. Bungkus input dengan div relatif agar posisi tombol bisa diatur dengan absolut */}
+              <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+                <input
+                  // 3. Tipe berubah dinamis tergantung state showPassword
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Masukkan password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  style={{ paddingRight: "45px", width: "100%" }} // Beri ruang di kanan agar teks tidak tertutup tombol
+                />
+                
+                {/* 4. Tombol toggle pengintip password */}
+                <button
+                  type="button" // Wajib agar tombol tidak men-submit form saat diklik
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{
+                    position: "absolute",
+                    right: "15px",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    fontSize: "18px",
+                    padding: 0,
+                  }}
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
+
               <Link to="/lupa-password" className="auth-forgot-link">
                 Lupa password?
               </Link>
             </div>
 
-            <button type="submit" className="auth-btn" >
+            <button type="submit" className="auth-btn">
               Masuk ke akun
             </button>
 

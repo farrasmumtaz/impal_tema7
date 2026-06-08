@@ -2,185 +2,133 @@ import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 
 export default function AdminDashboard() {
+
     const [courses, setCourses] = useState([]);
+    const [transactions, setTransactions] = useState([]);
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [editingId, setEditingId] = useState(null);
-    const token = localStorage.getItem("token");
+
     const API = import.meta.env.VITE_API_URL;
+
     const fetchCourses = useCallback(async () => {
-
         try {
-
             const res = await axios.get(`${API}/courses`);
-
             setCourses(res.data);
-
         } catch (err) {
-
             console.error(err);
+        }
+    }, [API]);
 
+    const fetchTransactions = useCallback(async () => {
+        const token = localStorage.getItem("token");
+        const url = `${API}/admin/transactions`;
+        console.log("Fetching transactions dari:", url); // ← cek URL yang dipanggil
+        try {
+            const res = await axios.get(url, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            setTransactions(res.data);
+        } catch (err) {
+            console.error("Status:", err.response?.status);
+            console.error("URL:", err.config?.url);
         }
     }, [API]);
 
     useEffect(() => {
-        const fetchCourses = async () => {
-            const res = await axios.get(`${API}/courses`);
-            setCourses(res.data);
-        };
         fetchCourses();
-    }, [API]);
+        fetchTransactions();
+    }, [fetchCourses, fetchTransactions]);
 
     const resetForm = () => {
-
         setEditingId(null);
-
         setTitle("");
-
         setDescription("");
-
     };
+
     const handleAddCourse = async () => {
-
-        if (!title || !description) {
-            return alert("Semua field wajib diisi");
-        }
-
+        const token = localStorage.getItem("token");
+        if (!title || !description) return alert("Semua field wajib diisi");
         try {
-
             await axios.post(
                 `${API}/admin/courses`,
-                {
-                    title,
-                    description
-                },
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                }
+                { title, description },
+                { headers: { Authorization: `Bearer ${token}` } }
             );
-
             alert("Course berhasil ditambahkan");
-
             resetForm();
-
             fetchCourses();
-
         } catch (err) {
-
             console.error(err);
-
             alert("Gagal tambah course");
-
         }
     };
+
     const handleEdit = (course) => {
-
         setEditingId(course.course_id);
-
         setTitle(course.title);
-
         setDescription(course.description || "");
-
-        window.scrollTo({
-            top: 0,
-            behavior: "smooth"
-        });
+        window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
     const handleUpdate = async () => {
-
-        if (!title || !description) {
-            return alert("Semua field wajib diisi");
-        }
-
+        const token = localStorage.getItem("token");
+        if (!title || !description) return alert("Semua field wajib diisi");
         try {
-
             await axios.put(
                 `${API}/admin/courses/${editingId}`,
-                {
-                    title,
-                    description
-                },
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                }
+                { title, description },
+                { headers: { Authorization: `Bearer ${token}` } }
             );
-
             alert("Course berhasil diupdate");
-
             resetForm();
-
             fetchCourses();
-
         } catch (err) {
-
             console.error(err);
-
             alert("Gagal update");
-
         }
     };
 
     const handleDelete = async (id, title) => {
-
-        const firstConfirm = window.confirm(
-            `Yakin ingin menghapus course "${title}" ?`
-        );
-
-        if (!firstConfirm) return;
-
-        const secondConfirm = window.confirm(
-            "Course akan dihapus permanen. Lanjutkan?"
-        );
-
-        if (!secondConfirm) return;
-
+        const token = localStorage.getItem("token");
+        if (!window.confirm(`Yakin ingin menghapus course "${title}" ?`)) return;
+        if (!window.confirm("Course akan dihapus permanen. Lanjutkan?")) return;
         try {
-
-            await axios.delete(
-                `${API}/admin/courses/${id}`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                }
-            );
-
+            await axios.delete(`${API}/admin/courses/${id}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
             alert("Course berhasil dihapus");
-
             fetchCourses();
-
         } catch (err) {
-
             console.error(err);
-
             alert("Gagal hapus course");
-
         }
     };
 
     const handleLogout = () => {
-
-        const confirm1 = window.confirm(
-            "Apakah Anda yakin ingin logout?"
-        );
-
-        if (!confirm1) return;
-
-        const confirm2 = window.confirm(
-            "Anda akan keluar dari panel admin. Lanjutkan?"
-        );
-
-        if (!confirm2) return;
-
+        if (!window.confirm("Apakah Anda yakin ingin logout?")) return;
+        if (!window.confirm("Anda akan keluar dari panel admin. Lanjutkan?")) return;
         localStorage.removeItem("token");
         localStorage.removeItem("user");
-
         window.location.href = "/";
+    };
+
+    const approveTransaction = async (id) => {
+        const token = localStorage.getItem("token");
+        if (!window.confirm("Verifikasi transaksi ini?")) return;
+        if (!window.confirm("Membership user akan diaktifkan. Lanjutkan?")) return;
+        try {
+            await axios.put(
+                `${API}/admin/transactions/${id}/approve`,
+                {},
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            alert("Transaksi berhasil diverifikasi");
+            fetchTransactions();
+        } catch (err) {
+            console.error(err);
+            alert("Gagal verifikasi transaksi");
+        }
     };
     return (
 
@@ -451,7 +399,127 @@ export default function AdminDashboard() {
                 }
 
             </div>
+            <div style={{ marginTop: "50px" }}>
 
+                <h2
+                    style={{
+                        marginBottom: "20px"
+                    }}
+                >
+                    Daftar Transaksi
+                </h2>
+
+                <div
+                    style={{
+                        background: "#111c44",
+                        borderRadius: "16px",
+                        overflowX: "auto",
+                        padding: "20px"
+                    }}
+                >
+
+                    <table
+                        style={{
+                            width: "100%",
+                            color: "white",
+                            borderCollapse: "collapse"
+                        }}
+                    >
+
+                        <thead>
+
+                            <tr>
+
+                                <th>ID</th>
+                                <th>User</th>
+                                <th>Email</th>
+                                <th>Paket</th>
+                                <th>Jumlah</th>
+                                <th>Status</th>
+                                <th>Tanggal</th>
+                                <th>Aksi</th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            {
+                                transactions.map((trx) => (
+
+                                    <tr key={trx.transaksi_id}>
+
+                                        <td>{trx.transaksi_id}</td>
+
+                                        <td>{trx.username}</td>
+
+                                        <td>{trx.email}</td>
+
+                                        <td>{trx.nama_paket}</td>
+
+                                        <td>
+                                            Rp {Number(trx.jumlah_bayar).toLocaleString("id-ID")}
+                                        </td>
+
+                                        <td>
+
+                                            {
+                                                trx.status_pembayaran === "paid"
+                                                    ? "✅ Paid"
+                                                    : "⏳ Pending"
+                                            }
+
+                                        </td>
+
+                                        <td>
+                                            {
+                                                new Date(
+                                                    trx.tanggal_transaksi
+                                                ).toLocaleDateString("id-ID")
+                                            }
+                                        </td>
+
+                                        <td>
+
+                                            {
+                                                trx.status_pembayaran !== "paid" && (
+
+                                                    <button
+                                                        onClick={() =>
+                                                            approveTransaction(
+                                                                trx.transaksi_id
+                                                            )
+                                                        }
+                                                        style={{
+                                                            background: "green",
+                                                            color: "white",
+                                                            border: "none",
+                                                            padding: "8px 12px",
+                                                            borderRadius: "8px",
+                                                            cursor: "pointer"
+                                                        }}
+                                                    >
+                                                        Approve
+                                                    </button>
+
+                                                )
+                                            }
+
+                                        </td>
+
+                                    </tr>
+
+                                ))
+                            }
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
         </div>
     );
 }
